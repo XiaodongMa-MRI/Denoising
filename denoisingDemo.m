@@ -1,23 +1,60 @@
 %%% a script demonstrating how to use the proposed method to denoise
 %%% magnitude diffusion images. 
-%% create noisy data with 2 shell b1000 and b2000
-load data_2shell dwi0 bvals0 Mask0 gs0
-nz= 15;
-if numel(size(dwi0))<4
-    dwi1= repmat(reshape(dwi0,size(dwi0,1),size(dwi0,2),1,size(dwi0,3)),1,1,nz,1);
-    Mask1= repmat(Mask0,1,1,nz);
-end
-numDWI= size(dwi1,4);
+%%% Modified by Xiaodong Ma, 12/2019
+%%%   - Simulated 2-shell brain data using Fiberfox
+%% Load nii file
+clear all;clc;close all
 
-ksize=7;%5;
+img=load_nii('Data/b2000_StickTensorBallBall_RELAX.nii');
+
+%% reform and insert b0 images
+dwi1 = double(img.img);
+dwi1 = permute(flip(dwi1,2),[2 1 3 4]); % flip and transpose
+dwi1= dwi1/max(dwi1(:)); % normalize to 1
+
+bvals0_orig = [0,1000*ones(1,30),2000*ones(1,30)];
+
+%insert b0 images every after 9th volumes
+ninterv_b0 = 9;
+nvol_tot = size(dwi1,4) + floor((size(dwi1,4)-1)/9);
+
+
+dwi_tmp = dwi1;
+dwi1 = zeros(size(dwi_tmp,1),size(dwi_tmp,2),size(dwi_tmp,3),nvol_tot);
+bvals0 = zeros(1,nvol_tot);
+
+idx_b0 = 1 : (ninterv_b0+1) : nvol_tot;
+idx_hb = 1:nvol_tot;
+idx_hb(idx_b0) = [];
+dwi1(:,:,:,idx_hb) = dwi_tmp(:,:,:,2:end);
+dwi1(:,:,:,idx_b0) = repmat(dwi_tmp(:,:,:,1),[1 1 1 numel(idx_b0)]);
+bvals0(1,idx_hb) = bvals0_orig(:,2:end);
+bvals0(1,idx_b0) = 0.;
+
+Mask1 = (dwi1(:,:,:,1) > 0.01*max(dwi1(:)));
+%% create noisy data with 2 shell b1000 and b2000
+
+ksize=5;%5 to be consistent with the manucsript;
+
+% remove background to save computation power
 [i1,i2,i3]= ind2sub(size(Mask1),find(Mask1));
-dwi= dwi1(min(i1):max(i1)+ksize,min(i2)-ksize:max(i2)+ksize,:,:); % full fov but with reduced background.
-mask= Mask1(min(i1):max(i1)+ksize,min(i2)-ksize:max(i2)+ksize,round(nz/2));
-figure, myimagesc(dwi(:,:,1,1),mask)
+
+[nx0,ny0,nz0] = size(Mask1);
+ind1_start = max(min(i1)-ksize,1);
+ind1_end   = min(max(i1)+ksize,nx0);
+ind2_start = max(min(i2)-ksize,1);
+ind2_end   = min(max(i2)+ksize,ny0);
+ind3_start = max(min(i3)-ksize,1);
+ind3_end   = min(max(i3)+ksize,nz0);
+Mask2 = Mask1(ind1_start:ind1_end,ind2_start:ind2_end,ind3_start:ind3_end);
+dwi   = dwi1 (ind1_start:ind1_end,ind2_start:ind2_end,ind3_start:ind3_end,:); % full fov but with reduced background.
+
+nz = size(dwi,3);
+mask = Mask2(:,:,round(nz/2));
+figure, myimagesc(dwi(:,:,round(nz/2),1),mask)
 
 s= rng;
-%tmp=repmat(Mask,[1 1 1 numDWI]);
-dwi00= squeeze(dwi(:,:,1,:));
+dwi00= squeeze(dwi(:,:,round(nz/2),:));
 % estimate spatially varying nois
 % spatial modulation
 % - fast variation (gaussian + sine wave modulation)
@@ -34,11 +71,10 @@ figure, myimagesc(sm,mask)
 %save data_2shell_trimmed dwi dwi00 sm mask nz ksize
 %
 %
-levels=10;%1:1:10;% percent
+levels = 1:1:10;% percent
 
-%parfor idx=1:length(levels)
-idx=1;
-    level= levels(idx);
+parfor idx = 1:length(levels)
+    level = levels(idx);
     % im_r is the simulated noisy data with varying noise level
     rng(s);
     
@@ -51,9 +87,14 @@ idx=1;
     im_r0=sqrt((dwi+noisemap).^2+(noisemap1).^2);
     IM_R(:,:,:,:,idx)= im_r0; % save this for denoising
 
-%end
+end
 disp('->done..')
-%save -v7.3 data_2shell_noisy_lvl10 dwi dwi00 sm mask nz ksize IM_R Sigma0 Sigma1 levels
+save -v7.3 data_2shell_brain_noisy dwi dwi00 sm mask nz ksize IM_R Sigma0 Sigma1 levels
+
+%% load generated noisy data
+clear all
+load data_2shell_brain_noisy.mat
+
 %%
 if isempty(gcp)
     mypool= parpool(8);
