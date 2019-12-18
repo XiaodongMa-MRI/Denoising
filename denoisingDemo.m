@@ -31,7 +31,7 @@ dwi1(:,:,:,idx_b0) = repmat(dwi_tmp(:,:,:,1),[1 1 1 numel(idx_b0)]);
 bvals0(1,idx_hb) = bvals0_orig(:,2:end);
 bvals0(1,idx_b0) = 0.;
 
-Mask1 = (dwi1(:,:,:,1) > 0.01*max(dwi1(:)));
+Mask1 = (dwi1(:,:,:,1) > 0.01*max(max(max(dwi1(:,:,:,1)))));
 %% create noisy data with 2 shell b1000 and b2000
 
 ksize=5;%5 to be consistent with the manucsript;
@@ -46,12 +46,12 @@ ind2_start = max(min(i2)-ksize,1);
 ind2_end   = min(max(i2)+ksize,ny0);
 ind3_start = max(min(i3)-ksize,1);
 ind3_end   = min(max(i3)+ksize,nz0);
-Mask2 = Mask1(ind1_start:ind1_end,ind2_start:ind2_end,ind3_start:ind3_end);
+mask = Mask1(ind1_start:ind1_end,ind2_start:ind2_end,ind3_start:ind3_end);
 dwi   = dwi1 (ind1_start:ind1_end,ind2_start:ind2_end,ind3_start:ind3_end,:); % full fov but with reduced background.
 
 nz = size(dwi,3);
-mask = Mask2(:,:,round(nz/2));
-figure, myimagesc(dwi(:,:,round(nz/2),1),mask)
+mask0 = mask(:,:,round(nz/2));
+figure, myimagesc(dwi(:,:,round(nz/2),1),mask0)
 
 s= rng;
 dwi00= squeeze(dwi(:,:,round(nz/2),:));
@@ -66,7 +66,7 @@ sm2= sin(repmat(linspace(-5*pi,5*pi,size(dwi,2)), size(dwi,1),1));
 
 sm= sm1+ 0.1*sm2;
 sm= sm./max(sm(:));
-figure, myimagesc(sm,mask)
+figure, myimagesc(sm,mask0)
 
 %save data_2shell_trimmed dwi dwi00 sm mask nz ksize
 %
@@ -197,7 +197,7 @@ ims{2}= IMs_r(:,:,ind);% highest noise
 ims{3}= IMd_mppca(:,:,ind); % mppca
 ims{4}= IMVSTd_shrink_EUIVST(:,:,ind); % shrink
 
-figure, position_plots(ims,[1 4],[0 1],[],mask,mystr,'y','gray',1)
+figure, position_plots(ims,[1 4],[0 1],[],mask0,mystr,'y','gray',1)
 
 % b1000
 ind=2;
@@ -206,7 +206,7 @@ ims{2}= IMs_r(:,:,ind);% highest noise
 ims{3}= IMd_mppca(:,:,ind); % mppca
 ims{4}= IMVSTd_shrink_EUIVST(:,:,ind); % shrink
 
-figure, position_plots(ims,[1 4],[0 .5],[],mask,mystr,'y','gray',1)
+figure, position_plots(ims,[1 4],[0 .5],[],mask0,mystr,'y','gray',1)
 
 % b2000
 ind=3;
@@ -215,4 +215,4 @@ ims{2}= IMs_r(:,:,ind);% highest noise
 ims{3}= IMd_mppca(:,:,ind); % mppca
 ims{4}= IMVSTd_shrink_EUIVST(:,:,ind); % shrink
 
-figure, position_plots(ims,[1 4],[0 .3],[],mask,mystr,'y','gray',1)
+figure, position_plots(ims,[1 4],[0 .3],[],mask0,mystr,'y','gray',1)
