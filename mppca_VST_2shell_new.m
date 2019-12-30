@@ -25,7 +25,8 @@ levels = levels(nlevel_idx);
 Sigma0 = Sigma0(:,:,nlevel_idx);
 Sigma1 = Sigma1(:,:,nlevel_idx);
 
-nzToShow_idx = round(size(IM_R,3)/2);
+% nzToShow_idx = round(size(IM_R,3)/2);
+nzToShow_idx = 45;
 tmp=repmat(mask(:,:,nzToShow_idx),[1 1 size(IM_R,4)]);
 %
 %% config
@@ -134,7 +135,7 @@ else
 end
 
 %% EUIVST
-if ~exist(fn3,'file')
+% if ~exist(fn3,'file')
     
     disp('-> starting to conduct EUIVST of denoised data...')
     
@@ -144,7 +145,7 @@ if ~exist(fn3,'file')
         % mppca+
         im_denoised= IMVSTd_mppca(:,:,:,:,idx);
         im_denoised= perform_riceVST_EUI(im_denoised,sig,ws,VST_ABC);
-        IMVSTd_mppca_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx),:);
+        IMVSTd_mppca_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx,:));
         
         % optimal shrinkage
         im_denoised= IMVSTd_shrink(:,:,:,:,idx);
@@ -167,15 +168,15 @@ if ~exist(fn3,'file')
         IMVSTd_tsvd_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx,:));
     end
     save(fn3,'IMVSTd_*_EUIVST')
-else
-    if ~exist('IMVSTd_shrink_EUIVST','var')
-        disp('-> loading denoised images with VST based denoising...')
-        load(fn3)
-    end
-end
+% else
+%     if ~exist('IMVSTd_shrink_EUIVST','var')
+%         disp('-> loading denoised images with VST based denoising...')
+%         load(fn3)
+%     end
+% end
 
 %% MPPCA
-if ~exist(fn_mppca,'file')
+% if ~exist(fn_mppca,'file')
     
     disp('-> starting to denoise with MPPCA...')
     
@@ -189,14 +190,15 @@ if ~exist(fn_mppca,'file')
         
     end
     save(fn_mppca,'IMd_mppca','Sigma_mppca');
-else
-    disp('-> loading denoised images with mppca...')
-    load(fn_mppca)
-end
+% else
+%     disp('-> loading denoised images with mppca...')
+%     load(fn_mppca)
+% end
 
 %% calc psnr
 IM_R1= squeeze(IM_R(:,:,nzToShow_idx,:,:));
-parfor idx=1:length(levels)
+dwi00 = squeeze(dwi(:,:,nzToShow_idx,:));
+for idx=1:length(levels)
     im_r00= IM_R1(:,:,:,idx);
     %IMs_r(:,:,:,idx)= im_r00;
     PSNR_noisy(idx)= psnr(im_r00(tmp),dwi00(tmp));

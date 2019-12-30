@@ -196,6 +196,7 @@ end
 
 %% calc psnr
 IM_R1= squeeze(IM_R(:,:,nzToShow_idx,:,:));
+dwi00 = squeeze(dwi(:,:,nzToShow_idx,:));
 parfor idx=1:length(levels)
     im_r00= IM_R1(:,:,:,idx);
     %IMs_r(:,:,:,idx)= im_r00;

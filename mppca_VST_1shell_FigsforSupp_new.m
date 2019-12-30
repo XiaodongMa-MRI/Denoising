@@ -25,9 +25,10 @@ levels = levels(nlevel_idx);
 Sigma0 = Sigma0(:,:,nlevel_idx);
 Sigma1 = Sigma1(:,:,nlevel_idx);
 
-nzToShow_idx = 45; % !!!!!!!!!!!!
+slc_idx=45;
+nzToShow_idx = 5; % !!!!!!!!!!!!
 
-tmp=repmat(mask(:,:,nzToShow_idx),[1 1 size(IM_R,4)]);
+tmp=repmat(mask(:,:,slc_idx),[1 1 size(IM_R,4)]); % !!!!
 %
 %% config
 myconfig=1;
@@ -140,30 +141,30 @@ end
     disp('-> starting to conduct EUIVST of denoised data...')
     
     parfor idx=1:size(IM_R,5)
-        sig= repmat(Sigma_VST(:,:,idx),[1 1 nz]);
+        sig= repmat(Sigma_VST(:,:,idx),[1 1 length(nz_idx)]);
         
         % mppca+
-        im_denoised= IMVSTd_mppca(:,:,:,:,idx);
+        im_denoised= IMVSTd_mppca(:,:,nz_idx,:,idx);
         im_denoised= perform_riceVST_EUI(im_denoised,sig,ws,VST_ABC);
         IMVSTd_mppca_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx,:));
         
         % optimal shrinkage
-        im_denoised= IMVSTd_shrink(:,:,:,:,idx);
+        im_denoised= IMVSTd_shrink(:,:,nz_idx,:,idx);
         im_denoised= perform_riceVST_EUI(im_denoised,sig,ws,VST_ABC);
         IMVSTd_shrink_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx,:));
         
         % optimal hard threshold
-        im_denoised= IMVSTd_hard(:,:,:,:,idx);
+        im_denoised= IMVSTd_hard(:,:,nz_idx,:,idx);
         im_denoised= perform_riceVST_EUI(im_denoised,sig,ws,VST_ABC);
         IMVSTd_hard_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx,:));
         
         % optimal soft threshold
-        im_denoised= IMVSTd_soft(:,:,:,:,idx);
+        im_denoised= IMVSTd_soft(:,:,nz_idx,:,idx);
         im_denoised= perform_riceVST_EUI(im_denoised,sig,ws,VST_ABC);
         IMVSTd_soft_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx,:));
         
         % tsvd
-        im_denoised= IMVSTd_tsvd(:,:,:,:,idx);
+        im_denoised= IMVSTd_tsvd(:,:,nz_idx,:,idx);
         im_denoised= perform_riceVST_EUI(im_denoised,sig,ws,VST_ABC);
         IMVSTd_tsvd_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx,:));
     end
@@ -192,10 +193,11 @@ end
 % else
 %     disp('-> loading denoised images with mppca...')
 %     load(fn_mppca)
-% end
+% endee
 
 %% calc psnr
 IM_R1= squeeze(IM_R(:,:,nzToShow_idx,:,:));
+dwi00 = dwi(:,:,slc_idx,1:34);%extract b=0 and b1k
 parfor idx=1:length(levels)
     im_r00= IM_R1(:,:,:,idx);
     %IMs_r(:,:,:,idx)= im_r00;
@@ -262,22 +264,21 @@ figplot
 
 %% display images
 %% b0
-clear all;
-load data_2shell_brain_noisy.mat
-load IMVSTd_EUIVST_1shell.mat
-load IMd_mppca_1shell.mat
-slc_idx=45;
+% clear all;
+% load data_2shell_brain_noisy.mat
+% load IMVSTd_EUIVST_1shell.mat
+% load IMd_mppca_1shell.mat
 
-dwi00 = dwi(:,:,slc_idx,1:34);%extract b=0 and b1k
+dwi00 = squeeze(dwi(:,:,slc_idx,1:34));%extract b=0 and b1k
 
 ind=1;
-sf = 15;
+sf = 10;
 fig_dwi_1;
-figure, position_plots(ims2,[2 .5*length(ims2)],[0 1],[],mask,mystr,'y','gray',1)
+figure, position_plots(ims2,[2 .5*length(ims2)],[0 1],[],mask(:,:,slc_idx),mystr,'y','gray',1)
 % b1000
-ind=2;
-%sf=20;
+ind=3;
+sf=3;
 fig_dwi_1;
-figure, position_plots(ims2,[2 .5*length(ims2)],[0 .5],[],mask,mystr,'y','gray',1)
+figure, position_plots(ims2,[2 .5*length(ims2)],[0 .3],[],mask(:,:,slc_idx),mystr,'y','gray',1)
 
 
