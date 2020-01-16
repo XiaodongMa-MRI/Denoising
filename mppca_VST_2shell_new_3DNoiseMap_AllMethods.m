@@ -5,29 +5,39 @@
 %%% both noise estimation as well as for VST.
 
 clear all;clc;close all
+warning off
 
 % load data_2shell_brain_noisy.mat
 load data_2shell_brain_noisy_3DNoiseMap.mat
 
 %% load estimated noise maps
+nlevel_idx = [2 4 6 7 8 9 10];
+load sigEst_multishell_fullFOV_B_ws5_WholeBrain_LevelOthers.mat
+Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
 
-load sigEst_singshell_fullFOV_B_ws5.mat
-Sigma_VST2_b1k_all = Sigma_VST2_b1k;
+nlevel_idx = 1;
+load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level1.mat
+Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
 
-load sigEst_singshell_fullFOV_B_ws5_noiseLevel42.mat
-Sigma_VST2_b1k_all = cat(3,Sigma_VST2_b1k_all,Sigma_VST2_b1k);
+nlevel_idx = 3;
+load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level3.mat
+Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
 
-Sigma_VST = Sigma_VST2_b1k_all;
+nlevel_idx = 5;
+load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level5.mat
+Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
 
-nlevel_idx = [10 8 6 4 2];
-% nz_idx = 41:41+8; % choose nz=45 as center slice
-IM_R = IM_R(:,:,:,:,nlevel_idx); % extract both b=1k and b2k
-levels = levels(nlevel_idx);
-Sigma0 = Sigma0(:,:,nlevel_idx);
-Sigma1 = Sigma1(:,:,nlevel_idx);
+nz_idx = 41:41+8; % choose nz=45 as center slice
+IM_R = IM_R(:,:,nz_idx,:,:); % extract both b=1k and b2k
+dwi = dwi(:,:,nz_idx,:,:); 
+mask = mask(:,:,nz_idx);
+% levels = levels(nlevel_idx);
+Sigma0 = Sigma0(:,:,nz_idx,:);
+Sigma1 = Sigma1(:,:,nz_idx,:);
+Sigma_VST = Sigma_VST(:,:,nz_idx,:);
 
-% nzToShow_idx = round(size(IM_R,3)/2);
-nzToShow_idx = 45;
+nzToShow_idx = round(size(IM_R,3)/2);
+% nzToShow_idx = 45;
 tmp=repmat(mask(:,:,nzToShow_idx),[1 1 size(IM_R,4)]);
 %
 %% config
@@ -38,12 +48,12 @@ switch myconfig
         ws= 5;% kernel size for VST
         %Sigma_VST= Sigma_VST2_b1k_ws5;
         ksize=5;% kernel size for denoising
-        fn1= 'IMVST_2shell.mat'; %
+        fn1= 'IMVST_2shell_3DNoiseMap_AllMethods.mat'; %
         %fn= 'denoiseVST_nonstationaryNoise_fullfov_multishell_ws5_new';
-        fn2= 'IMVSTd_2shell.mat';
-        fn3='IMVSTd_EUIVST_2shell.mat';
-        fn_mppca='IMd_mppca_2shell.mat';
-        fn_psnr='psnr_2shell.mat';
+        fn2= 'IMVSTd_2shell_3DNoiseMap_AllMethods.mat';
+        fn3='IMVSTd_EUIVST_2shell_3DNoiseMap_AllMethods.mat';
+        fn_mppca='IMd_mppca_2shell_AllMethods.mat';
+        fn_psnr='psnr_2shell_AllMethods.mat';
 %     case 2
 %         ws= 7;Sigma_VST= Sigma_VST2_b1k_ws7;ksize=7;
 %         fn= 'denoiseVST_nonstationaryNoise_fullfov_multishell_ws7_new';
@@ -61,9 +71,9 @@ switch myconfig
     otherwise
 end
 
-if isempty(gcp)
-    myPool= parpool(size(IM_R,5));
-end
+% if isempty(gcp)
+%     myPool= parpool(size(IM_R,5));
+% end
 clear IMVST
 %% - VST
 if ~exist(fn1,'file')
@@ -71,10 +81,12 @@ if ~exist(fn1,'file')
     
     IMVST= IM_R;
     IMVST(:)=0;
-    parfor idx=1:size(IM_R,5)
+%     parfor idx=1:size(IM_R,5)
+    for idx=1:size(IM_R,5)
         
         im_r= IM_R(:,:,:,:,idx);
-        sig= repmat(Sigma_VST(:,:,idx),[1 1 size(im_r,3)]);
+%         sig= repmat(Sigma_VST(:,:,idx),[1 1 size(im_r,3)]);
+        sig= Sigma_VST(:,:,:,idx);
         
         rimavst= perform_riceVST(im_r,sig,ws,VST_ABC) ; % 
         IMVST(:,:,:,:,idx)= rimavst;
@@ -95,7 +107,8 @@ end
 %% denoising
 if ~exist(fn2,'file')
     disp('-> starting to denoise using standard methods...')
-    parfor idx=1:size(IM_R,5)
+%     parfor idx=1:size(IM_R,5)
+    for idx=1:size(IM_R,5)
         %im_r= IM_R(:,:,:,:,idx);
         % sig= repmat(Sigma_VST(:,:,idx),[1 1 nz]);
         
@@ -136,12 +149,14 @@ else
 end
 
 %% EUIVST
-% if ~exist(fn3,'file')
+if ~exist(fn3,'file')
     
     disp('-> starting to conduct EUIVST of denoised data...')
     
-    parfor idx=1:size(IM_R,5)
-        sig= repmat(Sigma_VST(:,:,idx),[1 1 nz]);
+%     parfor idx=1:size(IM_R,5)
+    for idx=1:size(IM_R,5)
+%         sig= repmat(Sigma_VST(:,:,idx),[1 1 nz]);
+        sig= Sigma_VST(:,:,:,idx);
         
         % mppca+
         im_denoised= IMVSTd_mppca(:,:,:,:,idx);
@@ -169,12 +184,14 @@ end
         IMVSTd_tsvd_EUIVST(:,:,:,idx)= squeeze(im_denoised(:,:,nzToShow_idx,:));
     end
     save(fn3,'IMVSTd_*_EUIVST')
-% else
-%     if ~exist('IMVSTd_shrink_EUIVST','var')
-%         disp('-> loading denoised images with VST based denoising...')
-%         load(fn3)
-%     end
-% end
+else
+    if ~exist('IMVSTd_shrink_EUIVST','var')
+        disp('-> loading denoised images with VST based denoising...')
+        load(fn3)
+    end
+end
+
+
 
 %% MPPCA
 % if ~exist(fn_mppca,'file')

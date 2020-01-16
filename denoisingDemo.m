@@ -1,3 +1,4 @@
+
 %%% a script demonstrating how to use the proposed method to denoise
 %%% magnitude diffusion images. 
 %%% Modified by Xiaodong Ma, 12/2019
@@ -46,15 +47,20 @@ ind2_start = max(min(i2)-ksize,1);
 ind2_end   = min(max(i2)+ksize,ny0);
 ind3_start = max(min(i3)-ksize,1);
 ind3_end   = min(max(i3)+ksize,nz0);
+
+% This is an ugly trick....
+Mask1 = (dwi1(:,:,:,1) > 0.05*max(max(max(dwi1(:,:,:,1)))));
+
 mask = Mask1(ind1_start:ind1_end,ind2_start:ind2_end,ind3_start:ind3_end);
 dwi   = dwi1 (ind1_start:ind1_end,ind2_start:ind2_end,ind3_start:ind3_end,:); % full fov but with reduced background.
 
 nz = size(dwi,3);
-mask0 = mask(:,:,round(nz/2));
-figure, myimagesc(dwi(:,:,round(nz/2),1),mask0)
+nzToShow = 45;
+mask0 = mask(:,:,nzToShow);
+figure, myimagesc(dwi(:,:,nzToShow,1),mask0)
 
 s= rng;
-dwi00= squeeze(dwi(:,:,round(nz/2),:));
+dwi00= squeeze(dwi(:,:,nzToShow,:));
 % estimate spatially varying nois
 % spatial modulation
 % - fast variation (gaussian + sine wave modulation)
@@ -89,7 +95,7 @@ parfor idx = 1:length(levels)
 
 end
 disp('->done..')
-save -v7.3 data_2shell_brain_noisy dwi dwi00 sm mask nz ksize IM_R Sigma0 Sigma1 levels
+save -v7.3 data_2shell_brain_noisy dwi dwi00 sm mask nz ksize IM_R Sigma0 Sigma1 levels bvals0
 
 %% load generated noisy data
 clear all

@@ -2,35 +2,15 @@
 %%% Prior steps: 
 %%% (1) t1w.nii.gz should be in "T1w" folder
 %%% (2) bvals and bvecs in "T1w" folder
-%% brain simulation data (2 shell)
+%% brain simulation data (1 shell)
 %% generate mask for T1w
-Dir0 = '/home/naxos2-raid1/maxiao/Projects/Data/Denoising/BrainSimu_2Shell/T1w/';
+Dir0 = '/home/naxos2-raid1/maxiao/Projects/Data/Denoising/BrainSimu_1Shell/T1w/';
 
 mycmd1 = ['bet ', Dir0, 't1w ', Dir0, 't1w_brain'];
 system(mycmd1)
 
-
-%% mask generation for dwi data
-
-% load IMd_mppca_2shell_AllSlcs.mat IMd_mppca
-load data_2shell_brain_noisy mask
-Dir0 = '/home/naxos2-raid1/maxiao/Projects/Data/Denoising/BrainSimu_2Shell/T1w/';
-
-im2save = mask;
-im2save = uint8(im2save);
-% im2save = flip(flip(permute(im2save,[2 1 3]),2),1);
-im2save = flip(permute(im2save,[2 1 3]),2);
-
-img = make_nii( im2save , [2 2 2] );
-save_nii(img,...
-    [Dir0,filesep,'nodif_brain_mask.nii']);
-
-% convert to nii.gz
-mycmd1=['fslchfiletype NIFTI_GZ ',Dir0,filesep,'nodif_brain_mask.nii'];
-system(mycmd1)
-
 %% noisy images
-load data_2shell_brain_noisy_3DNoiseMap.mat IM_R levels
+load data_2shell_brain_noisy.mat IM_R levels
 
 for idx_level = 1:length(levels)
     
@@ -52,12 +32,10 @@ for idx_level = 1:length(levels)
     mycmd1=['fslchfiletype NIFTI_GZ ',savepath,filesep,'data.nii'];
     system(mycmd1)
 
-%     % generate mask using bet
-%     mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
-%         'nodif_brain -m -n -f 0.05'];
-%     system(mycmd1)
-    
-    copyfile([Dir0,'nodif_brain_mask.nii.gz'],savepath);
+    % generate mask using bet
+    mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
+        'nodif_brain -m -n -f 0.05'];
+    system(mycmd1)
     
     % copy bvals and bvecs from parent folder
     copyfile([Dir0,'bvals'],savepath);
@@ -82,17 +60,14 @@ img = make_nii( im2save , [2 2 2] );
 save_nii(img,...
     [savepath,filesep,'data.nii']);
 
-    
 % convert to nii.gz
 mycmd1=['fslchfiletype NIFTI_GZ ',savepath,filesep,'data.nii'];
 system(mycmd1)
 
-% % generate mask using bet
-% mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
-%     'nodif_brain -m -n -f 0.05'];
-% system(mycmd1)
-
-copyfile([Dir0,'nodif_brain_mask.nii.gz'],savepath);
+% generate mask using bet
+mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
+    'nodif_brain -m -n -f 0.05'];
+system(mycmd1)
 
 % copy bvals and bvecs from parent folder
 copyfile([Dir0,'bvals'],savepath);
@@ -100,10 +75,10 @@ copyfile([Dir0,'bvecs'],savepath);
 
 
 %% denoised images - proposed method
-load IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs_LevelOthers IMVSTd_shrink_EUIVST
+load IMVSTd_EUIVST_2shell_AllSlcs.mat IMVSTd_shrink_EUIVST
 % Dir0 = '/home/naxos2-raid1/maxiao/Projects/Data/Denoising/BrainSimu_2Shell/T1w/';
 
-levels = [2 4 6 7 8 9 10];
+levels = 1:10;
 
 for idx_level = 1:length(levels)
     
@@ -125,13 +100,11 @@ for idx_level = 1:length(levels)
     mycmd1=['fslchfiletype NIFTI_GZ ',savepath,filesep,'data.nii'];
     system(mycmd1)
 
-%     % generate mask using bet
-%     mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
-%         'nodif_brain -m -n -f 0.05'];
-%     system(mycmd1)
+    % generate mask using bet
+    mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
+        'nodif_brain -m -n -f 0.05'];
+    system(mycmd1)
     
-    copyfile([Dir0,'nodif_brain_mask.nii.gz'],savepath);
-
     % copy bvals and bvecs from parent folder
     copyfile([Dir0,'bvals'],savepath);
     copyfile([Dir0,'bvecs'],savepath);
@@ -140,15 +113,14 @@ clear IMVSTd_shrink_EUIVST
 
 
 %% denoised images - mppca
-% load IMd_mppca_2shell_AllSlcs.mat IMd_mppca
-load IMd_mppca_2shell_mrtrix3.mat IMd_mppca
+load IMd_mppca_2shell_AllSlcs.mat IMd_mppca
 % Dir0 = '/home/naxos2-raid1/maxiao/Projects/Data/Denoising/BrainSimu_2Shell/T1w/';
 
 levels = 1:10;
 
 for idx_level = 1:length(levels)
     
-    dwi_name = ['im_2shelll_mppca_mrtrix3_level',num2str(levels(idx_level))] ;
+    dwi_name = ['im_2shelll_mppca_level',num2str(levels(idx_level))] ;
     im2save = IMd_mppca(:,:,:,:,idx_level) .* 200 ;
     im2save = uint8(im2save);
     im2save = flip(permute(im2save,[2 1 3 4]),2);
@@ -166,21 +138,20 @@ for idx_level = 1:length(levels)
     mycmd1=['fslchfiletype NIFTI_GZ ',savepath,filesep,'data.nii'];
     system(mycmd1)
 
-%     % generate mask using bet
-%     mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
-%         'nodif_brain -m -n -f 0.05'];
-%     system(mycmd1)
+    % generate mask using bet
+    mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
+        'nodif_brain -m -n -f 0.05'];
+    system(mycmd1)
     
-    copyfile([Dir0,'nodif_brain_mask.nii.gz'],savepath);
-
     % copy bvals and bvecs from parent folder
     copyfile([Dir0,'bvals'],savepath);
     copyfile([Dir0,'bvecs'],savepath);
 end
 clear IMd_mppca
 
+
 %% noisy images of 10-average simulation (Gaussian)
-load data_2shell_brain_noisy3D_10AvgGaussian IM_R levels
+load data_2shell_brain_noisy_10AvgGaussian IM_R levels
 S_all = size(IM_R);
 IM_R = reshape(IM_R,S_all(1),S_all(2),S_all(3),S_all(4)/10,10,S_all(5));
 IM_R = squeeze(mean(IM_R,5));
@@ -205,12 +176,11 @@ for idx_level = 1:length(levels)
     mycmd1=['fslchfiletype NIFTI_GZ ',savepath,filesep,'data.nii'];
     system(mycmd1)
 
-%     % generate mask using bet
-%     mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
-%         'nodif_brain -m -n -f 0.05'];
-%     system(mycmd1)
+    % generate mask using bet
+    mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
+        'nodif_brain -m -n -f 0.05'];
+    system(mycmd1)
     
-    copyfile([Dir0,'nodif_brain_mask.nii.gz'],savepath);
     % copy bvals and bvecs from parent folder
     copyfile([Dir0,'bvals'],savepath);
     copyfile([Dir0,'bvecs'],savepath);
@@ -219,7 +189,7 @@ clear IM_R
 
 
 %% noisy images of 10-average simulation (Racian)
-load data_2shell_brain_noisy3D_10AvgRacian IM_R levels
+load data_2shell_brain_noisy_10AvgRacian IM_R levels
 % S_all = size(IM_R);
 % Dir0 = '/home/naxos2-raid1/maxiao/Projects/Data/Denoising/BrainSimu_2Shell/T1w/';
 for idx_level = 1:length(levels)
@@ -242,12 +212,11 @@ for idx_level = 1:length(levels)
     mycmd1=['fslchfiletype NIFTI_GZ ',savepath,filesep,'data.nii'];
     system(mycmd1)
 
-%     % generate mask using bet
-%     mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
-%         'nodif_brain -m -n -f 0.05'];
-%     system(mycmd1)
+    % generate mask using bet
+    mycmd1 = ['bet ', savepath,filesep, 'data ', savepath,filesep, ...
+        'nodif_brain -m -n -f 0.05'];
+    system(mycmd1)
     
-    copyfile([Dir0,'nodif_brain_mask.nii.gz'],savepath);
 end
 clear IM_R
 
@@ -301,7 +270,7 @@ for idx_level = 1:length(levels)
     
     for idx_avg = 1:10
         for idx_b = 1:size(bvecs_10avg,1)
-            fprintf(fid1,'%f',bvecs_10avg(idx_b,3));
+            fprintf(fid1,'%f',bvecs_10avg(idx_b,2));
             fprintf(fid1,'%s',' ');
         end
     end
