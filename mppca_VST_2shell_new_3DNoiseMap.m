@@ -12,7 +12,7 @@ load data_2shell_brain_noisy_3DNoiseMap.mat
 
 %% load estimated noise maps
 
-nlevel_idx = [1,3,4,5];
+nlevel_idx = [1:10];
 
 load sigEst_multishell_fullFOV_B_ws5_WholeBrain.mat
 Sigma_VST = Sigma_VST2_b1k(:,:,:,nlevel_idx);
@@ -35,11 +35,11 @@ switch myconfig
         ws= 5;% kernel size for VST
         %Sigma_VST= Sigma_VST2_b1k_ws5;
         ksize=5;% kernel size for denoising
-        fn1= 'IMVST_2shell_3DNoiseMap_Level1345.mat'; %
+        fn1= 'IMVST_2shell_3DNoiseMap_New.mat'; %
         %fn= 'denoiseVST_nonstationaryNoise_fullfov_multishell_ws5_new';
-        fn2= 'IMVSTd_2shell_3DNoiseMap_Level1345.mat';
-        fn3='IMVSTd_EUIVST_2shell_3DNoiseMap_Level1345.mat';
-        fn_proposed='IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs_Level1345.mat';
+        fn2= 'IMVSTd_2shell_3DNoiseMap_New.mat';
+        fn3='IMVSTd_EUIVST_2shell_3DNoiseMap_New.mat';
+        fn_proposed='IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs_New.mat';
 %         fn_mppca='IMd_mppca_2shell.mat';
 %         fn_psnr='psnr_2shell.mat';
 %     case 2
@@ -76,7 +76,7 @@ if ~exist(fn1,'file')
 %         sig= repmat(Sigma_VST(:,:,idx),[1 1 size(im_r,3)]);
         sig= Sigma_VST(:,:,:,idx);
         
-        rimavst= perform_riceVST2(im_r,sig,ws,VST_ABC) ; % 
+        rimavst= perform_riceVST(im_r,sig,ws,VST_ABC) ; % 
         IMVST(:,:,:,:,idx)= rimavst;
         
         [im_denoised,sig_mppca]= denoise_mppca(rimavst,ws);

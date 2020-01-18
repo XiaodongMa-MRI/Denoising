@@ -100,10 +100,10 @@ copyfile([Dir0,'bvecs'],savepath);
 
 
 %% denoised images - proposed method
-load IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs_LevelOthers IMVSTd_shrink_EUIVST
+load IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs IMVSTd_shrink_EUIVST
 % Dir0 = '/home/naxos2-raid1/maxiao/Projects/Data/Denoising/BrainSimu_2Shell/T1w/';
 
-levels = [2 4 6 7 8 9 10];
+levels = 1:10;
 
 for idx_level = 1:length(levels)
     

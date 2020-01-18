@@ -104,4 +104,4 @@ for idx = 1:length(levels)
 
 end
 disp('->done..')
-save -v7.3 data_2shell_brain_noisy_3DNoiseMap dwi dwi00 sm mask nz ksize IM_R Sigma0 Sigma1 levels bvals0
+save -v7.3 data_2shell_noisy_3DNoiseMap_ConstCSM dwi dwi00 sm mask nz ksize IM_R Sigma0 Sigma1 levels bvals0

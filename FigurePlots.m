@@ -122,7 +122,7 @@ IMs_denoised2 = squeeze(double(IMd_mppca(:,:,nzToShow_idx,:,:)));
 clear IMd_mppca
 
 % load and resort mppca images
-load IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs IMVSTd_shrink_EUIVST
+load IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs_New IMVSTd_shrink_EUIVST
 IMs_denoised1 = squeeze(IMVSTd_shrink_EUIVST(:,:,nzToShow_idx,:,:));
 clear IMVSTd_shrink_EUIVST
 
@@ -409,6 +409,9 @@ mycmd1=['fslchfiletype NIFTI ',dir_data,'dti_FA.nii.gz ',...
 system(mycmd1)
 FA_groundtruth = load_nii([dir_data,'dti_FA_ch.nii']);
 
+MD_groundtruth_AllSlc = MD_groundtruth.img;
+FA_groundtruth_AllSlc = FA_groundtruth.img;
+
 MD_groundtruth = MD_groundtruth.img(:,:,nzToShow_idx);
 FA_groundtruth = FA_groundtruth.img(:,:,nzToShow_idx);
 
@@ -433,6 +436,9 @@ for idx_level = 1:numel(levels)
         dir_data,'dti_FA_ch.nii'];
     system(mycmd1)
     FA_tmp = load_nii([dir_data,'dti_FA_ch.nii']);
+    
+    MD_noisy_AllSlc(:,:,:,idx_level) = MD_tmp.img;
+    FA_noisy_AllSlc(:,:,:,idx_level) = FA_tmp.img;
     
     MD_noisy(:,:,idx_level) = MD_tmp.img(:,:,nzToShow_idx);
     FA_noisy(:,:,idx_level) = FA_tmp.img(:,:,nzToShow_idx);
@@ -461,6 +467,9 @@ for idx_level = 1:numel(levels)
     system(mycmd1)
     FA_tmp = load_nii([dir_data,'dti_FA_ch.nii']);
     
+    MD_proposed_AllSlc(:,:,:,idx_level) = MD_tmp.img;
+    FA_proposed_AllSlc(:,:,:,idx_level) = FA_tmp.img;
+    
     MD_proposed(:,:,idx_level) = MD_tmp.img(:,:,nzToShow_idx);
     FA_proposed(:,:,idx_level) = FA_tmp.img(:,:,nzToShow_idx);
 end
@@ -488,28 +497,39 @@ for idx_level = 1:numel(levels)
     system(mycmd1)
     FA_tmp = load_nii([dir_data,'dti_FA_ch.nii']);
     
+    MD_mppca_AllSlc(:,:,:,idx_level) = MD_tmp.img;
+    FA_mppca_AllSlc(:,:,:,idx_level) = FA_tmp.img;
+    
     MD_mppca(:,:,idx_level) = MD_tmp.img(:,:,nzToShow_idx);
     FA_mppca(:,:,idx_level) = FA_tmp.img(:,:,nzToShow_idx);
 end
     
 % RMSE calculation
-Mask = mask(:,:,nzToShow_idx);
+Mask = mask;
 for idx= 1:length(levels)
-    fa_gt = rot90(FA_groundtruth);
-    md_gt = rot90(MD_groundtruth);
+%     fa_gt = rot90(FA_groundtruth);
+%     md_gt = rot90(MD_groundtruth);
+    fa_gt = permute(flip(FA_groundtruth_AllSlc,2),[2 1 3]);
+    md_gt = permute(flip(MD_groundtruth_AllSlc,2),[2 1 3]);
     %noisy
-    fa = rot90(FA_noisy(:,:,idx));
-    md = rot90(MD_noisy(:,:,idx));
+%     fa = rot90(FA_noisy(:,:,idx));
+%     md = rot90(MD_noisy(:,:,idx));
+    fa = permute(flip(FA_noisy_AllSlc(:,:,:,idx),2),[2 1 3]);
+    md = permute(flip(MD_noisy_AllSlc(:,:,:,idx),2),[2 1 3]);
     err_FA_noisy(idx)=RMSE(fa_gt(Mask),fa(Mask));
     err_MD_noisy(idx)=RMSE(md_gt(Mask),md(Mask));
     %mppca
-    fa = rot90(FA_mppca(:,:,idx));
-    md = rot90(MD_mppca(:,:,idx));
+%     fa = rot90(FA_mppca(:,:,idx));
+%     md = rot90(MD_mppca(:,:,idx));
+    fa = permute(flip(FA_mppca_AllSlc(:,:,:,idx),2),[2 1 3]);
+    md = permute(flip(MD_mppca_AllSlc(:,:,:,idx),2),[2 1 3]);
     err_FA_mppca(idx)=RMSE(fa_gt(Mask),fa(Mask));
     err_MD_mppca(idx)=RMSE(md_gt(Mask),md(Mask));
     %proposed
-    fa = rot90(FA_proposed(:,:,idx));
-    md = rot90(MD_proposed(:,:,idx));
+%     fa = rot90(FA_proposed(:,:,idx));
+%     md = rot90(MD_proposed(:,:,idx));
+    fa = permute(flip(FA_proposed_AllSlc(:,:,:,idx),2),[2 1 3]);
+    md = permute(flip(MD_proposed_AllSlc(:,:,:,idx),2),[2 1 3]);
     err_FA_proposed(idx)=RMSE(fa_gt(Mask),fa(Mask));
     err_MD_proposed(idx)=RMSE(md_gt(Mask),md(Mask));
 end
@@ -518,14 +538,10 @@ save rmse_MD_FA_2shell err_FA_noisy err_MD_noisy err_FA_mppca err_MD_mppca err_F
 
 % show RMSE of FA and MD
 isFA=0;
-
 clear opt
-
 opt.Markers={'v','+','o'};
-
 opt.XLabel='Noise level (%)';
 opt.XLim=[0 11];
-
 clear X Y
 X{1} = levels;
 X{2} = levels;
@@ -543,17 +559,46 @@ else
     Y{2} = err_MD_mppca;
     Y{3} = err_MD_proposed;
 end
-
 opt.Colors=[0,0,0;0,0,1;1,0,0];
 opt.Legend= {'Noisy','MPPCA','Proposed'};
 opt.LegendLoc= 'NorthWest';
 opt.FileName=[opt.FileName,'.png'];
+maxBoxDim=5;
+figplot
 
+
+isFA=1;
+clear opt
+opt.Markers={'v','+','o'};
+opt.XLabel='Noise level (%)';
+opt.XLim=[0 11];
+clear X Y
+X{1} = levels;
+X{2} = levels;
+X{3} = levels;
+if isFA
+    opt.YLabel='RMSE FA';
+    opt.FileName='rmse_FA_2shell';
+    Y{1} = err_FA_noisy;
+    Y{2} = err_FA_mppca;
+    Y{3} = err_FA_proposed;
+else
+    opt.YLabel='RMSE MD';
+    opt.FileName='rmse_MD_2shell';
+    Y{1} = err_MD_noisy;
+    Y{2} = err_MD_mppca;
+    Y{3} = err_MD_proposed;
+end
+opt.Colors=[0,0,0;0,0,1;1,0,0];
+opt.Legend= {'Noisy','MPPCA','Proposed'};
+opt.LegendLoc= 'NorthWest';
+opt.FileName=[opt.FileName,'.png'];
 maxBoxDim=5;
 figplot
 
 
 % display MD and FA
+Mask = mask(:,:,nzToShow_idx);
 idxn= 5;
 ims{1}=rot90(FA_groundtruth).*Mask;
 ims{2}=rot90(FA_noisy(:,:,idxn)).*Mask;
