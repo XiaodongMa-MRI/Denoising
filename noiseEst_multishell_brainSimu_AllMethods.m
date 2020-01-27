@@ -30,7 +30,8 @@ clear all;clc;close all
 % addpath('./HOSVD/');
 % addpath('./data/simulation/');
 
-load data_2shell_brain_noisy_3DNoiseMap.mat % created in noisyDataCreation.m
+% load data_2shell_brain_noisy_3DNoiseMap.mat % created in noisyDataCreation.m
+load('Results_LinearCSM/data_2shell_brain_noisy_3DNoiseMap.mat') % created in noisyDataCreation.m
 %%
 myconfig=1
 switch myconfig
@@ -60,8 +61,8 @@ Sigma1 = Sigma1(:,:,:,nlevel_idx);
 % 
 nzToShow_idx = round(size(IM_R,3)/2);
 %%
-% parfor idx=1:numel(levels)
-for idx=1:numel(levels)
+parfor idx=1:numel(levels)
+% for idx=1:numel(levels)
     im_r0= IM_R(:,:,:,:,idx);
     
     im_r= im_r0;
@@ -116,7 +117,7 @@ parfor idx=1:numel(levels)
 end
 % 
 % %%
-save Rmse_2shell_brainSimu_3DNoiseMap  levels Rmse_Sigma1 ...
+save Rmse_2shell_brainSimu_3DNoiseMap_AllMethods  levels Rmse_Sigma1 ...
     Rmse_VST2_all Rmse_VST2_b1k2k Rmse_VST2_b1k ...
     Rmse_VST2_b2k Rmse_VST2_b1k2k_ave
 
@@ -141,7 +142,7 @@ xlabel('Noise level (%)')
 % %%% noise levels for both kernel sizes (5 and 7) (which is different than previous observation that averaging noise estimations by only b1k and only b2k was most robust when the same noise was added to both real and imaginary channels before synthesizing the magnitude images)
 % %%% and that use of kernel size 7 vs 5 gave rise to better noise estimation.
 %% show images
-ind=1;
+ind=10;
 sigs{1}= Sigma0(:,:,nzToShow_idx,ind);
 sigs{2}= Sigma1(:,:,nzToShow_idx,ind);
 sigs{3}= Sigma_VST2_all(:,:,nzToShow_idx,ind);
@@ -149,14 +150,14 @@ sigs{4}= Sigma_VST2_b1k2k(:,:,nzToShow_idx,ind);
 sigs{5}= Sigma_VST2_b1k(:,:,nzToShow_idx,ind);
 sigs{6}= Sigma_VST2_b2k(:,:,nzToShow_idx,ind);
 %sigs{6}= 0.5*(sigs{4}+ sigs{5});
-figure, position_plots(sigs,[1 length(sigs)],[0 levels(ind)/100],[],mask)
+figure, position_plots(sigs,[1 length(sigs)],[0 levels(ind)/100],[],mask(:,:,nzToShow_idx))
 
 %% 
 clear opt
 opt.Markers={'.','v','+','o','x','^'};
 opt.XLabel='Noise level (%)';
 opt.YLabel='RMSE (%)';
-opt.YLim=[0 0.7];
+opt.YLim=[0 0.9];
 X{1}= levels;
 X{2}= levels;
 X{3}= levels;
@@ -170,7 +171,7 @@ Y{4}= 100*Rmse_VST2_b1k;
 Y{5}= 100*Rmse_VST2_b2k;
 %Y{6}= 100*Rmse_VST2_b1k2k_ave;
 opt.Legend= {'Sampled noise','All','b1k + b2k','b1k','b2k'};
-opt.LegendLoc= 'NorthEast';
+opt.LegendLoc= 'NorthWest';
 
 opt.FileName='rmse_vs_noise_2shell.png';
 maxBoxDim=5;

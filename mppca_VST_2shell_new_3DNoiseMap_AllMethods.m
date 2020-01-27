@@ -8,24 +8,24 @@ clear all;clc;close all
 warning off
 
 % load data_2shell_brain_noisy.mat
-load data_2shell_brain_noisy_3DNoiseMap.mat
+load data_2shell_noisy_3DNoiseMap_ConstCSM.mat
 
 %% load estimated noise maps
-nlevel_idx = [2 4 6 7 8 9 10];
-load sigEst_multishell_fullFOV_B_ws5_WholeBrain_LevelOthers.mat
+nlevel_idx = 1:10;
+load sigEst_multishell_fullFOV_B_ws5_WholeBrain_ConstCSM.mat
 Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
-
-nlevel_idx = 1;
-load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level1.mat
-Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
-
-nlevel_idx = 3;
-load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level3.mat
-Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
-
-nlevel_idx = 5;
-load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level5.mat
-Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
+% 
+% nlevel_idx = 1;
+% load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level1.mat
+% Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
+% 
+% nlevel_idx = 3;
+% load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level3.mat
+% Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
+% 
+% nlevel_idx = 5;
+% load sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level5.mat
+% Sigma_VST(:,:,:,nlevel_idx) = Sigma_VST2_b1k;
 
 nz_idx = 41:41+8; % choose nz=45 as center slice
 IM_R = IM_R(:,:,nz_idx,:,:); % extract both b=1k and b2k
@@ -48,12 +48,12 @@ switch myconfig
         ws= 5;% kernel size for VST
         %Sigma_VST= Sigma_VST2_b1k_ws5;
         ksize=5;% kernel size for denoising
-        fn1= 'IMVST_2shell_3DNoiseMap_AllMethods.mat'; %
+        fn1= 'IMVST_2shell_3DNoiseMap_ConstCSM_AllMethods.mat'; %
         %fn= 'denoiseVST_nonstationaryNoise_fullfov_multishell_ws5_new';
-        fn2= 'IMVSTd_2shell_3DNoiseMap_AllMethods.mat';
-        fn3='IMVSTd_EUIVST_2shell_3DNoiseMap_AllMethods.mat';
-        fn_mppca='IMd_mppca_2shell_AllMethods.mat';
-        fn_psnr='psnr_2shell_AllMethods.mat';
+        fn2= 'IMVSTd_2shell_3DNoiseMap_ConstCSM_AllMethods.mat';
+        fn3='IMVSTd_EUIVST_2shell_3DNoiseMap_ConstCSM_AllMethods.mat';
+        fn_mppca='IMd_mppca_2shell_ConstCSM_AllMethods.mat';
+        fn_psnr='psnr_2shell_ConstCSM_AllMethods.mat';
 %     case 2
 %         ws= 7;Sigma_VST= Sigma_VST2_b1k_ws7;ksize=7;
 %         fn= 'denoiseVST_nonstationaryNoise_fullfov_multishell_ws7_new';

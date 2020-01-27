@@ -8,13 +8,13 @@ clear all;clc;close all
 warning off
 
 % load data_2shell_brain_noisy.mat
-load data_2shell_brain_noisy_3DNoiseMap.mat
+load data_2shell_noisy_3DNoiseMap_ConstCSM.mat
 
 %% load estimated noise maps
 
 nlevel_idx = [1:10];
 
-load sigEst_multishell_fullFOV_B_ws5_WholeBrain.mat
+load sigEst_multishell_fullFOV_B_ws5_WholeBrain_ConstCSM.mat
 Sigma_VST = Sigma_VST2_b1k(:,:,:,nlevel_idx);
 
 % nz_idx = 41:41+8; % choose nz=45 as center slice
@@ -35,11 +35,11 @@ switch myconfig
         ws= 5;% kernel size for VST
         %Sigma_VST= Sigma_VST2_b1k_ws5;
         ksize=5;% kernel size for denoising
-        fn1= 'IMVST_2shell_3DNoiseMap_New.mat'; %
+        fn1= 'IMVST_2shell_3DNoiseMap_ConstCSM.mat'; %
         %fn= 'denoiseVST_nonstationaryNoise_fullfov_multishell_ws5_new';
-        fn2= 'IMVSTd_2shell_3DNoiseMap_New.mat';
-        fn3='IMVSTd_EUIVST_2shell_3DNoiseMap_New.mat';
-        fn_proposed='IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs_New.mat';
+        fn2= 'IMVSTd_2shell_3DNoiseMap_ConstCSM.mat';
+        fn3='IMVSTd_EUIVST_2shell_3DNoiseMap_ConstCSM.mat';
+        fn_proposed='IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs_ConstCSM.mat';
 %         fn_mppca='IMd_mppca_2shell.mat';
 %         fn_psnr='psnr_2shell.mat';
 %     case 2

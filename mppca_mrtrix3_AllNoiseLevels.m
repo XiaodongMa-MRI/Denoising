@@ -4,7 +4,7 @@ clear all;close all; clc
 
 dataDir0='/home/naxos2-raid1/maxiao/Projects/Data/Denoising/';
 % subjID={'BrainSimu_1Shell'};%{'1009','1013'};
-subjID={'BrainSimu_2Shell'};%{'1009','1013'};
+subjID={'BrainSimu_2Shell_ConstCSM'};%{'1009','1013'};
 
 dwiName={'im_2shelll_noisy_level1',...
         'im_2shelll_noisy_level2',...
@@ -16,8 +16,12 @@ dwiName={'im_2shelll_noisy_level1',...
         'im_2shelll_noisy_level8',...
         'im_2shelll_noisy_level9',...
         'im_2shelll_noisy_level10'};
-
-for ind=1:length(subjID)
+%%
+if isempty(gcp)
+    mypool= parpool(10);
+end  
+%%    
+parfor ind=1:length(subjID)
     for jnd=1:length(dwiName)
 
         if ~exist(fullfile(dataDir0,subjID{ind},'T1w',dwiName{jnd}),'dir')
@@ -63,11 +67,11 @@ for ind=1:length(subjID)
             fullfile(dir_data,'noise_map_load.nii')];
         system(mycmd1)
         Sigma_mppca_mrtrix3 = load_nii(fullfile(dir_data,'noise_map_load.nii'));
-        (:,:,:,jnd) = flip(permute(Sigma_mppca_mrtrix3.img,[2 1 3]),1);
+        Sigma_mppca(:,:,:,jnd) = flip(permute(Sigma_mppca_mrtrix3.img,[2 1 3]),1);
     end
 end
 
 IMd_mppca = double(IMd_mppca./200.0);
 Sigma_mppca = double(Sigma_mppca./200.0);
 
-save('IMd_mppca_2shell_mrtrix3.mat','IMd_mppca','Sigma_mppca','-v7.3');
+save('IMd_mppca_2shell_mrtrix3_ConstCSM.mat','IMd_mppca','Sigma_mppca','-v7.3');

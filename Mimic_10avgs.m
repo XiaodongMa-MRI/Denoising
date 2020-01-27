@@ -6,10 +6,11 @@
 
 %% Load nii file
 clear all;clc;close all
-img=load_nii('Data/b2000_StickTensorBallBall_RELAX.nii');
+% img=load_nii('Data_LinearCSM/b2000_StickTensorBallBall_RELAX.nii');
+img=load_nii('Data_ConstCSM/b2000_StickTensorBallBall_RELAX.nii');
 
 %% parameters
-bRacianNoise = 1; % 1-racian; 0-gaussian
+bRacianNoise = 0; % 1-racian; 0-gaussian
 Naverages = 10; % number of averages
 
 %% reform and insert b0 images
@@ -97,7 +98,7 @@ figure, myimagesc(sm(:,:,nz_center),mask0)
 %save data_2shell_trimmed dwi dwi00 sm mask nz ksize
 %
 %
-levels = [2; 5];% percent
+levels = [4];% percent
 % dwi = single(dwi);
 for idx = 1:length(levels)
     level = levels(idx);
@@ -123,10 +124,11 @@ end
 disp('->done..')
 IM_R = single(IM_R);
 % if bRacianNoise
-%     save -v7.3 data_2shell_brain_noisy3D_10AvgRacian dwi dwi00 sm mask nz ksize IM_R Sigma0 Sigma1 levels bvals
+%     save -v7.3 data_2shell_brain_noisy3D_10AvgRacian dwi dwi00 sm mask nz ksize IM_R levels bvals
 % else
-%     save -v7.3 data_2shell_brain_noisy3D_10AvgGaussian dwi dwi00 sm mask nz ksize IM_R Sigma0 Sigma1 levels bvals
+%     save -v7.3 data_2shell_brain_noisy3D_10AvgGaussian dwi dwi00 sm mask nz ksize IM_R levels bvals
 % end
+
 if bRacianNoise
     save -v7.3 data_2shell_brain_noisy3D_10AvgRacian dwi dwi00 sm mask nz ksize IM_R levels bvals
 else

@@ -30,16 +30,16 @@ clear all;clc;close all
 % addpath('./HOSVD/');
 % addpath('./data/simulation/');
 
-load data_2shell_brain_noisy_3DNoiseMap.mat % created in noisyDataCreation.m
+load data_2shell_noisy_3DNoiseMap_ConstCSM.mat % created in noisyDataCreation.m
 %%
 myconfig=1
 switch myconfig
     case 1
         ks=5; % kernel size
-        fn='sigEst_multishell_fullFOV_B_ws5_WholeBrain_Level1345';VST_ABC='B';
+        fn='sigEst_multishell_fullFOV_B_ws5_WholeBrain';VST_ABC='B';
     case 2
         ks=7;
-        fn='sigEst_multishell_fullFOV_B_ws7_WholeBrain_Level1345';VST_ABC='B';
+        fn='sigEst_multishell_fullFOV_B_ws7_WholeBrain';VST_ABC='B';
     otherwise
 end
 
@@ -50,7 +50,7 @@ end
 
 %% select noise levels and slices for noise estimation
 % nlevel_idx = [2 4 6 7 8 9 10];
-nlevel_idx = [1 3 4 5];
+nlevel_idx = 1:10;
 % nz_idx = 41:41+8; % choose nz=45 as center slice
 IM_R = IM_R(:,:,:,:,nlevel_idx);
 levels = levels(nlevel_idx);
@@ -93,95 +93,95 @@ save(fn, '-v7.3', 'Sigma_VST2_*')
 %     Sigma0 Sigma1 levels sm IM_R mask dwi00
 %% 
 %%
-clear Rmse_VST2*
-parfor idx=1:numel(levels)
-    isigma0= Sigma0(:,:,idx);
-    isigma= Sigma1(:,:,idx);
-    Rmse_Sigma1(idx)= RMSE(isigma(mask),isigma0(mask));
-    
-    isigma= Sigma_VST2_all(:,:,idx);
-    Rmse_VST2_all(idx)= RMSE(isigma(mask),isigma0(mask));
-    
-    isigma= Sigma_VST2_b1k(:,:,idx);
-    Rmse_VST2_b1k(idx)= RMSE(isigma(mask),isigma0(mask));
-    
-    isigma= Sigma_VST2_b2k(:,:,idx);
-    Rmse_VST2_b2k(idx)= RMSE(isigma(mask),isigma0(mask));
-    
-    isigma= Sigma_VST2_b1k2k(:,:,idx);
-    Rmse_VST2_b1k2k(idx)= RMSE(isigma(mask),isigma0(mask));
-    
-    isigma= 0.5*(Sigma_VST2_b1k(:,:,idx)+ Sigma_VST2_b2k(:,:,idx));
-    Rmse_VST2_b1k2k_ave(idx)= RMSE(isigma(mask),isigma0(mask));
-    
-end
+% clear Rmse_VST2*
+% parfor idx=1:numel(levels)
+%     isigma0= Sigma0(:,:,idx);
+%     isigma= Sigma1(:,:,idx);
+%     Rmse_Sigma1(idx)= RMSE(isigma(mask),isigma0(mask));
+%     
+%     isigma= Sigma_VST2_all(:,:,idx);
+%     Rmse_VST2_all(idx)= RMSE(isigma(mask),isigma0(mask));
+%     
+%     isigma= Sigma_VST2_b1k(:,:,idx);
+%     Rmse_VST2_b1k(idx)= RMSE(isigma(mask),isigma0(mask));
+%     
+%     isigma= Sigma_VST2_b2k(:,:,idx);
+%     Rmse_VST2_b2k(idx)= RMSE(isigma(mask),isigma0(mask));
+%     
+%     isigma= Sigma_VST2_b1k2k(:,:,idx);
+%     Rmse_VST2_b1k2k(idx)= RMSE(isigma(mask),isigma0(mask));
+%     
+%     isigma= 0.5*(Sigma_VST2_b1k(:,:,idx)+ Sigma_VST2_b2k(:,:,idx));
+%     Rmse_VST2_b1k2k_ave(idx)= RMSE(isigma(mask),isigma0(mask));
+%     
+% end
+% % 
+% % %%
+% save Rmse_2shell_brainSimu  levels Rmse_Sigma1 ...
+%     Rmse_VST2_all Rmse_VST2_b1k2k Rmse_VST2_b1k ...
+%     Rmse_VST2_b2k Rmse_VST2_b1k2k_ave
 % 
-% %%
-save Rmse_2shell_brainSimu_OddLevels  levels Rmse_Sigma1 ...
-    Rmse_VST2_all Rmse_VST2_b1k2k Rmse_VST2_b1k ...
-    Rmse_VST2_b2k Rmse_VST2_b1k2k_ave
-
-
-figure, plot(levels,[Rmse_Sigma1.' Rmse_VST2_all.' Rmse_VST2_b1k2k.' ... 
-    Rmse_VST2_b1k.' ...
-    Rmse_VST2_b2k.'  Rmse_VST2_b1k2k_ave.'],'x-')
-legend('sampled noise','all','b1k2k','b1k','b2k','mean(b1k+b2k)')
-title('Noise estimate (fast spatially varying noise)')
-ylabel('RMSE')
-xlabel('Noise level (%)')
 % 
-% figure, plot(levels,[Rmse_VST2_all_ws7.' Rmse_VST2_b1k2k_ws7.' ... 
-%     Rmse_VST2_b1k_ws7.' ...
-%     Rmse_VST2_b2k_ws7.'  Rmse_VST2_b1k2k_ave_ws7.'],'x-')
-% legend('all','b1k2k','b1k','b2k','mean(b1k+b2k)')
+% figure, plot(levels,[Rmse_Sigma1.' Rmse_VST2_all.' Rmse_VST2_b1k2k.' ... 
+%     Rmse_VST2_b1k.' ...
+%     Rmse_VST2_b2k.'  Rmse_VST2_b1k2k_ave.'],'x-')
+% legend('sampled noise','all','b1k2k','b1k','b2k','mean(b1k+b2k)')
 % title('Noise estimate (fast spatially varying noise)')
 % ylabel('RMSE')
 % xlabel('Noise level (%)')
+% % 
+% % figure, plot(levels,[Rmse_VST2_all_ws7.' Rmse_VST2_b1k2k_ws7.' ... 
+% %     Rmse_VST2_b1k_ws7.' ...
+% %     Rmse_VST2_b2k_ws7.'  Rmse_VST2_b1k2k_ave_ws7.'],'x-')
+% % legend('all','b1k2k','b1k','b2k','mean(b1k+b2k)')
+% % title('Noise estimate (fast spatially varying noise)')
+% % ylabel('RMSE')
+% % xlabel('Noise level (%)')
+% % 
+% % %%% found that use of only b1k led to best noise estimation across the
+% % %%% noise levels for both kernel sizes (5 and 7) (which is different than previous observation that averaging noise estimations by only b1k and only b2k was most robust when the same noise was added to both real and imaginary channels before synthesizing the magnitude images)
+% % %%% and that use of kernel size 7 vs 5 gave rise to better noise estimation.
+% %% show images
+% ind=1;
+% sigs{1}= Sigma0(:,:,ind);
+% sigs{2}= Sigma1(:,:,ind);
+% sigs{3}= Sigma_VST2_all(:,:,ind);
+% sigs{4}= Sigma_VST2_b1k2k(:,:,ind);
+% sigs{5}= Sigma_VST2_b1k(:,:,ind);
+% sigs{6}= Sigma_VST2_b2k(:,:,ind);
+% %sigs{6}= 0.5*(sigs{4}+ sigs{5});
+% figure, position_plots(sigs,[1 length(sigs)],[0 levels(ind)/100],[],mask)
 % 
-% %%% found that use of only b1k led to best noise estimation across the
-% %%% noise levels for both kernel sizes (5 and 7) (which is different than previous observation that averaging noise estimations by only b1k and only b2k was most robust when the same noise was added to both real and imaginary channels before synthesizing the magnitude images)
-% %%% and that use of kernel size 7 vs 5 gave rise to better noise estimation.
-%% show images
-ind=1;
-sigs{1}= Sigma0(:,:,ind);
-sigs{2}= Sigma1(:,:,ind);
-sigs{3}= Sigma_VST2_all(:,:,ind);
-sigs{4}= Sigma_VST2_b1k2k(:,:,ind);
-sigs{5}= Sigma_VST2_b1k(:,:,ind);
-sigs{6}= Sigma_VST2_b2k(:,:,ind);
-%sigs{6}= 0.5*(sigs{4}+ sigs{5});
-figure, position_plots(sigs,[1 length(sigs)],[0 levels(ind)/100],[],mask)
-
-%% 
-clear opt
-opt.Markers={'.','v','+','o','x','^'};
-opt.XLabel='Noise level (%)';
-opt.YLabel='RMSE (%)';
-opt.YLim=[0 0.7];
-X{1}= levels;
-X{2}= levels;
-X{3}= levels;
-X{4}= levels;
-X{5}= levels;
-%X{6}= levels;
-Y{1}= 100*Rmse_Sigma1;
-Y{2}= 100*Rmse_VST2_all;
-Y{3}= 100*Rmse_VST2_b1k2k;
-Y{4}= 100*Rmse_VST2_b1k;
-Y{5}= 100*Rmse_VST2_b2k;
-%Y{6}= 100*Rmse_VST2_b1k2k_ave;
-opt.Legend= {'Sampled noise','All','b1k + b2k','b1k','b2k'};
-opt.LegendLoc= 'NorthEast';
-
-opt.FileName='rmse_vs_noise_2shell.png';
-maxBoxDim=5;
-figplot
-
-% %
-% sigs{1}= Sigma1(:,:,ind);
-% sigs{2}= Sigma_VST2_all_ws7(:,:,ind);
-% sigs{3}= Sigma_VST2_b1k2k_ws7(:,:,ind);
-% sigs{4}= Sigma_VST2_b1k_ws7(:,:,ind);
-% sigs{5}= Sigma_VST2_b2k_ws7(:,:,ind);
-% sigs{6}= 0.5*(sigs{4}+ sigs{5});
-% figure, position_plots(sigs(1:end),[1 6],[0 levels(ind)/100],[],mask)
+% %% 
+% clear opt
+% opt.Markers={'.','v','+','o','x','^'};
+% opt.XLabel='Noise level (%)';
+% opt.YLabel='RMSE (%)';
+% opt.YLim=[0 0.7];
+% X{1}= levels;
+% X{2}= levels;
+% X{3}= levels;
+% X{4}= levels;
+% X{5}= levels;
+% %X{6}= levels;
+% Y{1}= 100*Rmse_Sigma1;
+% Y{2}= 100*Rmse_VST2_all;
+% Y{3}= 100*Rmse_VST2_b1k2k;
+% Y{4}= 100*Rmse_VST2_b1k;
+% Y{5}= 100*Rmse_VST2_b2k;
+% %Y{6}= 100*Rmse_VST2_b1k2k_ave;
+% opt.Legend= {'Sampled noise','All','b1k + b2k','b1k','b2k'};
+% opt.LegendLoc= 'NorthEast';
+% 
+% opt.FileName='rmse_vs_noise_2shell.png';
+% maxBoxDim=5;
+% figplot
+% 
+% % %
+% % sigs{1}= Sigma1(:,:,ind);
+% % sigs{2}= Sigma_VST2_all_ws7(:,:,ind);
+% % sigs{3}= Sigma_VST2_b1k2k_ws7(:,:,ind);
+% % sigs{4}= Sigma_VST2_b1k_ws7(:,:,ind);
+% % sigs{5}= Sigma_VST2_b2k_ws7(:,:,ind);
+% % sigs{6}= 0.5*(sigs{4}+ sigs{5});
+% % figure, position_plots(sigs(1:end),[1 6],[0 levels(ind)/100],[],mask)

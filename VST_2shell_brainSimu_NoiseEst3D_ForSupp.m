@@ -23,7 +23,7 @@ clear all;clc;close all
 % addpath('./HOSVD/');
 % addpath('./data/simulation/');
 
-img=load_nii('Data/b2000_StickTensorBallBall_RELAX.nii');
+img=load_nii('Data_ConstCSM/b2000_StickTensorBallBall_RELAX.nii');
 
 %% reform and insert b0 images
 dwi1 = double(img.img);
@@ -150,11 +150,11 @@ parfor idx=1:length(levels)
 %     
 end
 %
-save -v7.3 sigEst3D_fastvarying_fullFOV_new Sigma_VST_A Sigma_VST_B ...
+save -v7.3 sigEst3D_fastvarying_fullFOV_ConstCSM Sigma_VST_A Sigma_VST_B ...
     Sigma_MPPCA Sigma0 Sigma1 levels sm mask IM_R dwi00
 
 %%
-load sigEst3D_fastvarying_fullFOV_new Sigma_VST_A Sigma_VST_B Sigma_MPPCA ...
+load sigEst3D_fastvarying_fullFOV_ConstCSM Sigma_VST_A Sigma_VST_B Sigma_MPPCA ...
     Sigma0 Sigma1 levels mask
 %%
 n=0;ind=numel(levels);
@@ -288,7 +288,7 @@ clear all;clc;close all
 % dwi00= squeeze(dwi(:,:,1,:));
 % clear PSNR* error_FA*
 %% VST A vs VST B for VST
- load sigEst3D_fastvarying_fullFOV_new Sigma_VST_B mask IM_R dwi00 levels
+ load sigEst3D_fastvarying_fullFOV_ConstCSM Sigma_VST_B mask IM_R dwi00 levels
  Sigma_VST= Sigma_VST_B; % found use of VST B vs A led to better noise estimation
  nz= size(IM_R{1},3)
  tmp=repmat(mask,[1 1 size(IM_R{1},4)]);
@@ -305,10 +305,10 @@ clear all;clc;close all
 switch myconfig
     case 1
         VST_ABC='A';
-        fn= 'IMVSTd_AvsB_A_3DNoise';
+        fn= 'IMVSTd_AvsB_A_3DNoise_ConstCSM';
     case 2
         VST_ABC='B';
-        fn= 'IMVSTd_AvsB_B_3DNoise';
+        fn= 'IMVSTd_AvsB_B_3DNoise_ConstCSM';
     otherwise
 end
 
@@ -346,10 +346,10 @@ save(fn,'-v7.3','IMVST','Sigma_MPPCA','IMVSTd','IMVSTd_EUIVST','PSNR')
 switch myconfig
     case 1
         VST_ABC='A';
-        fn= 'IMVSTd_AvsB_A_3DNoise';
+        fn= 'IMVSTd_AvsB_A_3DNoise_ConstCSM';
     case 2
         VST_ABC='B';
-        fn= 'IMVSTd_AvsB_B_3DNoise';
+        fn= 'IMVSTd_AvsB_B_3DNoise_ConstCSM';
     otherwise
 end
 
@@ -382,16 +382,16 @@ end
 save(fn,'-v7.3','IMVST','Sigma_MPPCA','IMVSTd','IMVSTd_EUIVST','PSNR')
 
 %%
-PSNR_A= load('IMVSTd_AvsB_A_3DNoise.mat','PSNR')
-PSNR_B= load('IMVSTd_AvsB_B_3DNoise.mat','PSNR')
+PSNR_A= load('IMVSTd_AvsB_A_3DNoise_ConstCSM.mat','PSNR')
+PSNR_B= load('IMVSTd_AvsB_B_3DNoise_ConstCSM.mat','PSNR')
 figure, plot(levels, [PSNR_A.PSNR.' PSNR_B.PSNR.'],'x-')
 legend('VST A','VST B')
 %%% comparable psnr was observed for VST A vs VST B, across the noise
 %%% levels considered here. 
 
 %%
-sig_A= load('IMVSTd_AvsB_A_3DNoise.mat','Sigma_MPPCA')
-sig_B= load('IMVSTd_AvsB_B_3DNoise.mat','Sigma_MPPCA')
+sig_A= load('IMVSTd_AvsB_A_3DNoise_ConstCSM.mat','Sigma_MPPCA')
+sig_B= load('IMVSTd_AvsB_B_3DNoise_ConstCSM.mat','Sigma_MPPCA')
 soi=8;
 mean_A= zeros(1,length(levels));
 mean_B= mean_A;

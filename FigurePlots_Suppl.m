@@ -191,10 +191,13 @@ mystr=[];
 figure, position_plots(ims, [1 3],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
 
 
+%% display DWI images of 10/20 averages
+
+
 
 %% Fig.S4
 
-load sigEst3D_fastvarying_fullFOV_new Sigma_VST_A Sigma_VST_B Sigma_MPPCA ...
+load sigEst3D_fastvarying_fullFOV_ConstCSM Sigma_VST_A Sigma_VST_B Sigma_MPPCA ...
     Sigma0 Sigma1 levels mask
 
 n=0;ind=2;
@@ -257,7 +260,7 @@ clear opt
 opt.Markers={'.','x','o','^'};
 opt.XLabel='Noise level (%)';
 opt.YLabel='RMSE (%)';
-opt.YLim=[0 1.6];
+opt.YLim=[0 1.2];
 X{1}= levels;
 X{2}= levels;
 X{3}= levels;
@@ -274,8 +277,8 @@ maxBoxDim=5;
 figplot
 
 %%
-sig_A= load('IMVSTd_AvsB_A_3DNoise.mat','Sigma_MPPCA')
-sig_B= load('IMVSTd_AvsB_B_3DNoise','Sigma_MPPCA')
+sig_A= load('IMVSTd_AvsB_A_3DNoise_ConstCSM','Sigma_MPPCA')
+sig_B= load('IMVSTd_AvsB_B_3DNoise_ConstCSM','Sigma_MPPCA')
 soi=8;
 mean_A= zeros(1,length(levels));
 mean_B= mean_A;
@@ -351,3 +354,89 @@ opt.LegendLoc= 'NorthWest';
 opt.FileName=['VSTAvsB4VST_hist_',num2str(ind),'perc.png'];
 maxBoxDim=5;
 figplot
+
+
+%% PSNR of various singular value manipulation methods
+
+% load Results_LinearCSM/psnr_2shell_AllMethods.mat
+load psnr_2shell_ConstCSM_AllMethods
+
+clear opt X Y
+opt.Markers={'.','v','+','o','x','^','*'};
+opt.XLabel='Noise level (%)';
+opt.YLabel='PSNR';
+%opt.XLim=[0.8 1.2];
+X{1}= levels;
+X{2}= levels;
+X{3}= levels;
+X{4}= levels;
+X{5}= levels;
+X{6}= levels;
+X{7}= levels;
+Y{1}= PSNR_noisy;
+Y{2}= PSNR_mppca;
+Y{3}= PSNR_VSTd_mppca;
+Y{4}= PSNR_VSTd_shrink;
+Y{5}= PSNR_VSTd_hard;
+Y{6}= PSNR_VSTd_soft;
+Y{7}= PSNR_VSTd_tsvd;
+opt.Legend= {'Noisy','MPPCA','MPPCA+','Shrink','Hard','Solft','TSVD'};
+opt.LegendLoc= 'NorthEast';
+
+opt.FileName=['PSNR_2shell_BrainSimu_ForSupp.png'];
+maxBoxDim=5;
+figplot
+
+
+clear opt X Y
+opt.Markers={'.','v','+','o','x','^','*'};
+opt.XLabel='Noise level (%)';
+opt.YLabel='PSNR';
+opt.XLim=[3.5 4.5];
+opt.YLim=[40 43];
+X{1}= levels;
+X{2}= levels;
+X{3}= levels;
+X{4}= levels;
+X{5}= levels;
+X{6}= levels;
+X{7}= levels;
+Y{1}= PSNR_noisy;
+Y{2}= PSNR_mppca;
+Y{3}= PSNR_VSTd_mppca;
+Y{4}= PSNR_VSTd_shrink;
+Y{5}= PSNR_VSTd_hard;
+Y{6}= PSNR_VSTd_soft;
+Y{7}= PSNR_VSTd_tsvd;
+
+opt.FileName=['PSNR_2shell_BrainSimu_ForSupp_Zoomed.png'];
+maxBoxDim=5;
+figplot
+
+% display images
+% b0
+
+% load Results_LinearCSM/data_2shell_brain_noisy_3DNoiseMap.mat IM_R dwi mask
+% load Results_LinearCSM/IMd_mppca_2shell_AllMethods.mat IMd_mppca
+% load Results_LinearCSM/IMVSTd_EUIVST_2shell_3DNoiseMap_AllMethods.mat
+
+load data_2shell_noisy_3DNoiseMap_ConstCSM IM_R dwi mask
+load IMd_mppca_2shell_ConstCSM_AllMethods IMd_mppca
+load IMVSTd_EUIVST_2shell_3DNoiseMap_ConstCSM_AllMethods
+
+nzToShow_idx = 45;
+idx_noiseLevel = 4;
+
+dwi00 = squeeze(dwi(:,:,nzToShow_idx,:));%extract b=0 and b1k
+
+ind=1;
+sf = 30;
+fig_dwi_1;
+figure, position_plots(ims2,[2 .5*length(ims2)],[0 1],[],mask(:,:,nzToShow_idx),mystr,'y','gray',1)
+% b2000
+ind=36;
+sf=10;
+fig_dwi_1;
+figure, position_plots(ims2,[2 .5*length(ims2)],[0 .2],[],mask(:,:,nzToShow_idx),mystr,'y','gray',1)
+
+

@@ -5,7 +5,8 @@
 %% Load nii file
 clear all;clc;close all
 
-img=load_nii('Data/b2000_StickTensorBallBall_RELAX.nii');
+% img=load_nii('Data_LinearCSM/b2000_StickTensorBallBall_RELAX.nii');
+img=load_nii('Data_ConstCSM/b2000_StickTensorBallBall_RELAX.nii');
 
 %% reform and insert b0 images
 dwi1 = double(img.img);
