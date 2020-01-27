@@ -1,0 +1,15 @@
+# Ignore everything at root:
+/*
+
+# Except for directories:
+#!wordpress/(WordPress Site 1)/wp-content/themes/
+#!wordpress/(WordPress Site 1)/wp-content/themes/
+#!wordpress/(WordPress Site 1)/wp-content/themes/
+!RiceOptVST/
+
+# Except files:
+!README
+!.git*
+
+#Except files of type:
+!*.m

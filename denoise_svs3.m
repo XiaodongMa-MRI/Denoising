@@ -1,4 +1,4 @@
-function im_out = denoise_svs3 (nim, b, step, Sig, whichmethod)
+function [im_out, rank_out] = denoise_svs3 (nim, b, step, Sig, whichmethod)
 % 
 % DENOISE_SVS3 to denoise using the optimal singular value shrinkage methods
 % including truncated SVD, optimal soft and hard thresholding, optimal
@@ -8,11 +8,14 @@ function im_out = denoise_svs3 (nim, b, step, Sig, whichmethod)
 %
 % This is basically a modification of denoise_svs.m to enable parfor.
 %
-% Usage: im_out = denoise_svs3 (nim, b, step, Sig, whichmethod)
+% Usage: [im_out, rank_out] = denoise_svs3 (nim, b, step, Sig, whichmethod)
 %
 % Returns
 % -------
 % im_out: denoised image [x y z M]
+%
+% rank_out: [x y z], ranks for individual patches after singular value
+% manipulation. 
 %
 % Expects
 % -------
@@ -41,13 +44,15 @@ function im_out = denoise_svs3 (nim, b, step, Sig, whichmethod)
 %
 
 
-time0         =   clock;
+% time0         =   clock;
 if nargin<2
     b             =   5; % block size
 end
 if nargin<3
     step          =   1; % step length
 end
+
+rank_out= zeros(size(Sig));
 
 switch whichmethod
     case 'tsvd'
@@ -57,7 +62,7 @@ switch whichmethod
     case 'hard'
         im_out =denoise_optim_SVHT(nim,b,step,Sig);
     case 'shrink'
-        im_out =denoise_optim_SVShrinkage3(nim,b,step,Sig);
+        [im_out, rank_out] =denoise_optim_SVShrinkage3(nim,b,step,Sig);
     otherwise
         
         error('-> Denoising method specified is not supported...')

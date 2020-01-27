@@ -34,6 +34,16 @@ bvals0(1,idx_b0) = 0.;
 
 Mask1 = (dwi1(:,:,:,1) > 0.01*max(max(max(dwi1(:,:,:,1)))));
 %% create noisy data with 2 shell b1000 and b2000
+<<<<<<< HEAD
+=======
+load data_2shell dwi0 bvals0 Mask0 gs0
+nz= 11;
+if numel(size(dwi0))<4
+    dwi1= repmat(reshape(dwi0,size(dwi0,1),size(dwi0,2),1,size(dwi0,3)),1,1,nz,1);
+    Mask1= repmat(Mask0,1,1,nz);
+end
+numDWI= size(dwi1,4);
+>>>>>>> master
 
 ksize=5;%5 to be consistent with the manucsript;
 
@@ -134,6 +144,9 @@ im_r0= IM_R(:,:,:,:,idx);
 %% denoise
 ws=5;
 Sigma_VST= Sigma_VST2_b1k;
+
+Sigma_VST= Sigma0; % for a quick check w/o noise estimation.
+
 % IMVST= IM_R;
 %     IMVST(:)=0;
     %parfor idx=1:size(IM_R,5)
@@ -161,7 +174,8 @@ Sigma_VST= Sigma_VST2_b1k;
         sig_med= sig_mppca;
         
         % optimal shrinkage
-        im_denoised= denoise_svs3(rimavst,ksize,1,sig_med,'shrink');
+        stepsize= 2;
+        [im_denoised,rankmap]= denoise_svs3(rimavst,ksize,stepsize,sig_med,'shrink');
         % Total elapsed time = 2.798461 min
         IMVSTd_shrink(:,:,:,:,idx)= im_denoised;
         
