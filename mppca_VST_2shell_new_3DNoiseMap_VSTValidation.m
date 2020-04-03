@@ -5,11 +5,11 @@ clear all;clc;close all
 warning off
 
 % load data_2shell_brain_noisy.mat
-load data_2shell_brain_noisy_3DNoiseMap.mat
-load IMd_mppca_2shell_mrtrix3 Sigma_mppca
+load data_2shell_noisy_3DNoiseMap_ConstCSM
+load IMd_mppca_2shell_mrtrix3_ConstCSM Sigma_mppca
 %% denosing with ground-truth noise model
 
-nlevel_idx = [5];
+nlevel_idx = [10];
 
 nz_idx = 41:41+8; % choose nz=45 as center slice
 % nz_idx = 45; % choose nz=45 as center slice
@@ -26,7 +26,7 @@ Sigma_mppca_mrtrix3 = Sigma_mppca(:,:,nz_idx,nlevel_idx);
 Sigma_mppca_mrtrix3(isnan(Sigma_mppca_mrtrix3)) = 1e-6;
 Sigma_mppca_mrtrix3(isinf(Sigma_mppca_mrtrix3)) = 1e-6;
 %%
-FlagSigma = 0; % 1 for ground-truth; 0 for MPPCA
+FlagSigma = 1; % 1 for ground-truth; 0 for MPPCA
 %
 %% config
 myconfig=1;
@@ -37,9 +37,9 @@ switch myconfig
         %Sigma_VST= Sigma_VST2_b1k_ws5;
         ksize=5;% kernel size for denoising
         if FlagSigma
-            fn1='IMVSTd_EUIVST_2shell_VSTwithSigma0Level5.mat';
+            fn1='IMVSTd_EUIVST_2shell_VSTwithSigma0_ConstCSM_Level10.mat';
         else
-            fn1='IMVSTd_EUIVST_2shell_VSTwithSigmaMPPCALevel5.mat';
+            fn1='IMVSTd_EUIVST_2shell_VSTwithSigmaMPPCA_ConstCSM_Level10.mat';
         end
     otherwise
 end

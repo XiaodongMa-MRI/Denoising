@@ -51,101 +51,6 @@ figure, myimagesc( rot90(squeeze(dwi(nSliceToShow,:,:,36))) )
 colormap(gray);colorbar;imcontrast % scale to 0.2
 figure; myimagesc( rot90(squeeze(sm(nSliceToShow,:,:))) );colorbar;imcontrast% scale to [0.3 1]
 
-
-%% Fig.3
-clear all; clc; close all
-load sigEst_multishell_fullFOV_B_ws5
-load data_2shell_brain_noisy Sigma0 Sigma1 mask
-
-nlevel_idx = 10:-2:2;
-Sigma0 = Sigma0(:,:,nlevel_idx);
-Sigma1 = Sigma1(:,:,nlevel_idx);
-
-nSliceToShow = 45;
-mask0 = mask(:,:,nSliceToShow);
-
-ind=5; % level=2
-sigs{1}= Sigma0(:,:,ind);
-sigs{2}= Sigma1(:,:,ind);
-sigs{3}= Sigma_VST2_all(:,:,ind);
-sigs{4}= Sigma_VST2_b1k2k(:,:,ind);
-sigs{5}= Sigma_VST2_b1k(:,:,ind);
-sigs{6}= Sigma_VST2_b2k(:,:,ind);
-%sigs{6}= 0.5*(sigs{4}+ sigs{5});
-figure, position_plots(sigs,[1 length(sigs)],[0 levels(ind)/100],[],mask0)
-
-ind=3; % level=6
-sigs{1}= Sigma0(:,:,ind);
-sigs{2}= Sigma1(:,:,ind);
-sigs{3}= Sigma_VST2_all(:,:,ind);
-sigs{4}= Sigma_VST2_b1k2k(:,:,ind);
-sigs{5}= Sigma_VST2_b1k(:,:,ind);
-sigs{6}= Sigma_VST2_b2k(:,:,ind);
-%sigs{6}= 0.5*(sigs{4}+ sigs{5});
-figure, position_plots(sigs,[1 length(sigs)],[0 levels(ind)/100],[],mask0)
-
-ind=1; % level=10
-sigs{1}= Sigma0(:,:,ind);
-sigs{2}= Sigma1(:,:,ind);
-sigs{3}= Sigma_VST2_all(:,:,ind);
-sigs{4}= Sigma_VST2_b1k2k(:,:,ind);
-sigs{5}= Sigma_VST2_b1k(:,:,ind);
-sigs{6}= Sigma_VST2_b2k(:,:,ind);
-%sigs{6}= 0.5*(sigs{4}+ sigs{5});
-figure, position_plots(sigs,[1 length(sigs)],[0 levels(ind)/100],[],mask0)
-
-% RMSE of estimated noise map
-load Rmse_2shell_brainSimu
-idx_levels = 10:-2:2;
-levels_all = zeros(1,10);
-Rmse_Sigma1_allLevels = zeros(1,10);
-Rmse_VST2_all_allLevels = zeros(1,10);
-Rmse_VST2_b1k2k_allLevels = zeros(1,10);
-Rmse_VST2_b1k_allLevels = zeros(1,10);
-Rmse_VST2_b2k_allLevels = zeros(1,10);
-
-levels_all(idx_levels) = levels;
-Rmse_Sigma1_allLevels(idx_levels) = Rmse_Sigma1;
-Rmse_VST2_all_allLevels(idx_levels) = Rmse_VST2_all;
-Rmse_VST2_b1k2k_allLevels(idx_levels) = Rmse_VST2_b1k2k;
-Rmse_VST2_b1k_allLevels(idx_levels) = Rmse_VST2_b1k;
-Rmse_VST2_b2k_allLevels(idx_levels) = Rmse_VST2_b2k;
-
-
-load Rmse_2shell_brainSimu_OddLevels
-idx_levels = 9:-2:1;
-
-levels_all(idx_levels) = levels;
-Rmse_Sigma1_allLevels(idx_levels) = Rmse_Sigma1;
-Rmse_VST2_all_allLevels(idx_levels) = Rmse_VST2_all;
-Rmse_VST2_b1k2k_allLevels(idx_levels) = Rmse_VST2_b1k2k;
-Rmse_VST2_b1k_allLevels(idx_levels) = Rmse_VST2_b1k;
-Rmse_VST2_b2k_allLevels(idx_levels) = Rmse_VST2_b2k;
-
-%
-clear opt
-opt.Markers={'.','v','+','o','x','^'};
-opt.XLabel='Noise level (%)';
-opt.YLabel='RMSE (%)';
-opt.YLim=[0 0.7];
-X{1}= levels_all;
-X{2}= levels_all;
-X{3}= levels_all;
-X{4}= levels_all;
-X{5}= levels_all;
-%X{6}= levels;
-Y{1}= 100*Rmse_Sigma1_allLevels;
-Y{2}= 100*Rmse_VST2_all_allLevels;
-Y{3}= 100*Rmse_VST2_b1k2k_allLevels;
-Y{4}= 100*Rmse_VST2_b1k2k_allLevels;
-Y{5}= 100*Rmse_VST2_b2k_allLevels;
-%Y{6}= 100*Rmse_VST2_b1k2k_ave;
-opt.Legend= {'Sampled noise','All','b1k + b2k','b1k','b2k'};
-opt.LegendLoc= 'NorthWest';
-
-opt.FileName='rmse_vs_noise_2shell.png';
-maxBoxDim=5;
-figplot
 %% Fig.4 PSNR of denoised images of whole volume
 clear all; clc; close all
 
@@ -242,6 +147,7 @@ for idx=1:size(IMs_r,5)
 end
 
 
+save PSNR_2shell_All_ConstCSM PSNR*;
 
 clear opt
 opt.Markers={'v','+','o'};
@@ -404,6 +310,129 @@ for idx=size(IMs_r,4)
     tmp=repmat(mask,[1 1 size(ii,3)]);
     PSNR_mppca_b2k_1 = psnr(ii(tmp&~~ii),ii0(tmp&~~ii))
 
+    % noisy
+    im_r00= IMs_r(:,:,:,idx);
+    
+    ii= im_r00(:,:,1);
+    ii0= dwi00(:,:,1);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_noisy_b0_1= psnr(ii(tmp),ii0(tmp))
+    
+    ii= im_r00(:,:,3);
+    ii0= dwi00(:,:,3);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_noisy_b1k_1= psnr(ii(tmp),ii0(tmp))
+    
+        ii= im_r00(:,:,36);
+    ii0= dwi00(:,:,36);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_noisy_b2k_1= psnr(ii(tmp),ii0(tmp))
+    
+end
+
+
+%% Fig.5_new: with NLM results
+clear all;clc;close all
+% create dwi and difference images
+
+level_idx = 4;
+nzToShow_idx = 45;
+load data_2shell_noisy_3DNoiseMap_ConstCSM IM_R dwi mask dwi00 bvals0
+
+% load and resort mppca images
+load IMd_mppca_2shell_mrtrix3_ConstCSM IMd_mppca
+IMs_denoised2 = squeeze(IMd_mppca(:,:,nzToShow_idx,:,level_idx));
+clear IMd_mppca;
+
+% load and resort mppca images
+load IMVSTd_EUIVST_2shell_3DNoiseMapAllSlcs_ConstCSM IMVSTd_shrink_EUIVST
+IMs_denoised1 = squeeze(IMVSTd_shrink_EUIVST(:,:,nzToShow_idx,:,level_idx));
+clear IMVSTd_shrink_EUIVST
+
+% load NLM results
+load IMd_AONLM_level4_ConstCSM.mat
+IMs_NLM = squeeze(IMd_AONLM(:,:,nzToShow_idx,:));
+
+IMs_r = squeeze(IM_R(:,:,nzToShow_idx,:,level_idx));
+mask=mask(:,:,nzToShow_idx);
+
+% b0
+ind=1;
+sf=25;
+fig_dwi_BrainSimuResultsWithNLM;
+figure, position_plots(ims2,[1 5],[0 1],[],mask,'','y','gray',2)
+
+
+% b1000
+ind=3;
+sf=15;
+fig_dwi_BrainSimuResultsWithNLM;
+figure, position_plots(ims2,[1 5],[0 0.3],[],mask,'','y','gray',2)
+
+% b2000
+ind=36;
+sf=10;
+fig_dwi_BrainSimuResultsWithNLM;
+figure, position_plots(ims2,[1 5],[0 0.2],[],mask,'','y','gray',2)
+
+% calculate psnr for each image
+
+for idx=size(IMs_r,4)
+    
+    % proposed
+    ims_denoised1= IMs_denoised1(:,:,:,idx);
+    
+    ii= ims_denoised1(:,:,1);
+    ii0= dwi00(:,:,1);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_proposed_b0_1 = psnr(ii(tmp),ii0(tmp))
+    
+    ii= ims_denoised1(:,:,3);
+    ii0= dwi00(:,:,3);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_proposed_b1k_1 = psnr(ii(tmp),ii0(tmp))
+    
+    ii= ims_denoised1(:,:,36);
+    ii0= dwi00(:,:,36);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_proposed_b2k_1 = psnr(ii(tmp),ii0(tmp))
+    
+    % mppca
+    ims_denoised2= double(IMs_denoised2(:,:,:,idx));
+    
+    ii= ims_denoised2(:,:,1);
+    ii0= dwi00(:,:,1);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_mppca_b0_1 = psnr(ii(tmp&~~ii),ii0(tmp&~~ii))
+    
+    ii= ims_denoised2(:,:,3);
+    ii0= dwi00(:,:,3);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_mppca_b1k_1 = psnr(ii(tmp&~~ii),ii0(tmp&~~ii))
+    
+    ii= ims_denoised2(:,:,36);
+    ii0= dwi00(:,:,36);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_mppca_b2k_1 = psnr(ii(tmp&~~ii),ii0(tmp&~~ii))
+
+    % NLM
+    im_r00= IMs_NLM(:,:,:,idx);
+    
+    ii= im_r00(:,:,1);
+    ii0= dwi00(:,:,1);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_NLM_b0_1= psnr(ii(tmp),ii0(tmp))
+    
+    ii= im_r00(:,:,3);
+    ii0= dwi00(:,:,3);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_NLM_b1k_1= psnr(ii(tmp),ii0(tmp))
+    
+        ii= im_r00(:,:,36);
+    ii0= dwi00(:,:,36);
+    tmp=repmat(mask,[1 1 size(ii,3)]);
+    PSNR_NLM_b2k_1= psnr(ii(tmp),ii0(tmp))
+    
     % noisy
     im_r00= IMs_r(:,:,:,idx);
     
@@ -642,8 +671,6 @@ mystr=[];
 figure, position_plots(ims, [1 4],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
 
 
-
-
 % display difference maps
 Mask = mask(:,:,nzToShow_idx);
 % display MD
@@ -673,6 +700,68 @@ ims{1}=5*rot90(abs(RD_groundtruth_AllSlc(:,:,nzToShow_idx)-RD_groundtruth_AllSlc
 ims{2}=5*rot90(abs(RD_noisy_AllSlc(:,:,nzToShow_idx,idxn)-RD_groundtruth_AllSlc(:,:,nzToShow_idx))).*Mask;
 ims{3}=5*rot90(abs(RD_mppca_AllSlc(:,:,nzToShow_idx,idxn)-RD_groundtruth_AllSlc(:,:,nzToShow_idx))).*Mask;
 ims{4}=5*rot90(abs(RD_proposed_AllSlc(:,:,nzToShow_idx,idxn)-RD_groundtruth_AllSlc(:,:,nzToShow_idx))).*Mask;
+mystr=[];
+figure, position_plots(ims, [1 4],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
+
+
+
+% display metric/difference maps in sagittal view
+nzToShow_idx = 44;
+Mask = flip(mask(:,nzToShow_idx,:),1);
+% metrics
+ims{1}=rot90((squeeze(abs(FA_groundtruth_AllSlc(nzToShow_idx,:,:)))).*squeeze(Mask));
+ims{2}=rot90((squeeze(abs(FA_noisy_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+ims{3}=rot90((squeeze(abs(FA_mppca_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+ims{4}=rot90((squeeze(abs(FA_proposed_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+mystr=[];
+figure, position_plots(ims, [1 4],[0 1],[],[],mystr,'w','jet',1)
+ims{1}=rot90((squeeze(abs(MD_groundtruth_AllSlc(nzToShow_idx,:,:)))).*squeeze(Mask));
+ims{2}=rot90((squeeze(abs(MD_noisy_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+ims{3}=rot90((squeeze(abs(MD_mppca_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+ims{4}=rot90((squeeze(abs(MD_proposed_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+mystr=[];
+figure, position_plots(ims, [1 4],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
+ims{1}=rot90((squeeze(abs(AD_groundtruth_AllSlc(nzToShow_idx,:,:)))).*squeeze(Mask));
+ims{2}=rot90((squeeze(abs(AD_noisy_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+ims{3}=rot90((squeeze(abs(AD_mppca_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+ims{4}=rot90((squeeze(abs(AD_proposed_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+mystr=[];
+figure, position_plots(ims, [1 4],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
+ims{1}=rot90((squeeze(abs(RD_groundtruth_AllSlc(nzToShow_idx,:,:)))).*squeeze(Mask));
+ims{2}=rot90((squeeze(abs(RD_noisy_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+ims{3}=rot90((squeeze(abs(RD_mppca_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+ims{4}=rot90((squeeze(abs(RD_proposed_AllSlc(nzToShow_idx,:,:,idxn)))).*squeeze(Mask));
+mystr=[];
+figure, position_plots(ims, [1 4],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
+
+% difference
+% display MD
+idxn= 4;
+ims{1}=5*rot90(squeeze(abs(MD_groundtruth_AllSlc(nzToShow_idx,:,:)-MD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{2}=5*rot90(squeeze(abs(MD_noisy_AllSlc(nzToShow_idx,:,:,idxn)-MD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{3}=5*rot90(squeeze(abs(MD_mppca_AllSlc(nzToShow_idx,:,:,idxn)-MD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{4}=5*rot90(squeeze(abs(MD_proposed_AllSlc(nzToShow_idx,:,:,idxn)-MD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+mystr=[];
+figure, position_plots(ims, [1 4],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
+% display FA
+ims{1}=5*rot90(squeeze(abs(FA_groundtruth_AllSlc(nzToShow_idx,:,:)-FA_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{2}=5*rot90(squeeze(abs(FA_noisy_AllSlc(nzToShow_idx,:,:,idxn)-FA_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{3}=5*rot90(squeeze(abs(FA_mppca_AllSlc(nzToShow_idx,:,:,idxn)-FA_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{4}=5*rot90(squeeze(abs(FA_proposed_AllSlc(nzToShow_idx,:,:,idxn)-FA_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+mystr=[];
+figure, position_plots(ims, [1 4],[0 1],[],[],mystr,'w','jet',1)
+% display AD
+ims{1}=5*rot90(squeeze(abs(AD_groundtruth_AllSlc(nzToShow_idx,:,:)-AD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{2}=5*rot90(squeeze(abs(AD_noisy_AllSlc(nzToShow_idx,:,:,idxn)-AD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{3}=5*rot90(squeeze(abs(AD_mppca_AllSlc(nzToShow_idx,:,:,idxn)-AD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{4}=5*rot90(squeeze(abs(AD_proposed_AllSlc(nzToShow_idx,:,:,idxn)-AD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+mystr=[];
+figure, position_plots(ims, [1 4],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
+% display RD
+ims{1}=5*rot90(squeeze(abs(RD_groundtruth_AllSlc(nzToShow_idx,:,:)-RD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{2}=5*rot90(squeeze(abs(RD_noisy_AllSlc(nzToShow_idx,:,:,idxn)-RD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{3}=5*rot90(squeeze(abs(RD_mppca_AllSlc(nzToShow_idx,:,:,idxn)-RD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
+ims{4}=5*rot90(squeeze(abs(RD_proposed_AllSlc(nzToShow_idx,:,:,idxn)-RD_groundtruth_AllSlc(nzToShow_idx,:,:))).*squeeze(Mask));
 mystr=[];
 figure, position_plots(ims, [1 4],[0 2*10^(-3)],[],[],mystr,'w','jet',1)
 %% 10 averages
