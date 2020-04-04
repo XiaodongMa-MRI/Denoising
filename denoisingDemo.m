@@ -7,9 +7,9 @@
 %%%
 %%% Author:      Xiaoping Wu, Xiaodong Ma, 04-2020
 
-
 clear all; close all;
 addpath(genpath('Utils'));
+addpath(genpath('RiceOptVST'));
 
 %% Simulate noisy data with 2 shell b1000 and b2000
 load data_2shell
@@ -95,7 +95,7 @@ for ind = 1:size(dwi00,3)
 end
 
 % results display
-mystr={'Ground truth','Noisy','MPPCA','Proposed'};
+mystr={'Reference','Noisy','MPPCA','Proposed'};
 
 % b0
 ind=1;
