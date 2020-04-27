@@ -120,20 +120,32 @@ fprintf('Total elapsed time = %f min\n\n', (etime(clock,time0)/60) );
 
 end
 
-function  [X, W, r]   =   Low_rank_SSC( Y1, sig1)
-% sig1: used to determine the optimal shrinkage
-[X, r]= denoise(Y1,sig1);
+function  [X, W, r]   =   Low_rank_SSC( Y, sig)
+% sig: used to determine the optimal shrinkage
+[sx,sy,sz,M]= size(Y);
+N= sx*sy*sz;
+Y = reshape(Y, N, M); 
+
+if M<N
+    Y = Y.'; % MxN
+end
+
+[X, r]= denoise(Y,sig);
+
+if M<N
+    X= X.';
+end
+
+X= reshape(X,sx,sy,sz,M);
+
 wei =   1/(1+r);
 W   =   wei*ones( size(X) );
 X   =   X*wei;
 end
 
 function [X, R]= denoise(Y,sig)
-
-[sx,sy,sz,M]= size(Y);
-N= sx*sy*sz;% assuming M<=N
-Y = reshape(Y, N, M); Y = Y.'; % MxN
-
+% denoising
+[M, N]= size(Y);% assuming M<=N
 Y= Y./sqrt(N)./sig;
 
 [u, vals, v] = svd(Y, 'econ');
@@ -142,10 +154,6 @@ y= optshrink_impl(y,M/N,'fro');
 X= u* diag(y)* v';
 
 X= sqrt(N).* sig.* X;
-
-X= X.';
-X= reshape(X,sx,sy,sz,M);
-
 R= length(find(y));
 
 end
@@ -202,5 +210,3 @@ end
 % function omega= approxOmega(beta)
 % omega= 0.56*beta^3- 0.95*beta^2+ 1.82*beta+ 1.43;
 % end
-
-

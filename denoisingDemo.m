@@ -3,7 +3,11 @@
 %%% Two denoising methods were tested:
 %%%     (1) proposed framework combining VST and optimal shrinkage;
 %%%     (2) MPPCA
-%%% Referenece:  Xiaodong Ma, Xiaoping Wu, Kamil Ugurbil, NeuroImage 2020
+%%% More details on the method and its utility for diffusion can be found 
+%%% in the paper: X. Ma, K. U?urbil, and X. Wu, Denoise magnitude diffusion
+%%% magnetic resonance images via variance-stabilizing transformation and 
+%%% optimal singular-value manipulation. NeuroImage, 2020. 215: p. 116852.
+%%% https://doi.org/10.1016/j.neuroimage.2020.116852
 %%%
 %%% Author:      Xiaoping Wu, Xiaodong Ma, 04-2020
 
