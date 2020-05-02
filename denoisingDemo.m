@@ -3,11 +3,7 @@
 %%% Two denoising methods were tested:
 %%%     (1) proposed framework combining VST and optimal shrinkage;
 %%%     (2) MPPCA
-%%% More details on the method and its utility for diffusion can be found 
-%%% in the paper: X. Ma, K. U?urbil, and X. Wu, Denoise magnitude diffusion
-%%% magnetic resonance images via variance-stabilizing transformation and 
-%%% optimal singular-value manipulation. NeuroImage, 2020. 215: p. 116852.
-%%% https://doi.org/10.1016/j.neuroimage.2020.116852
+%%% Referenece:  Xiaodong Ma, Xiaoping Wu, Kamil Ugurbil, NeuroImage 2020
 %%%
 %%% Author:      Xiaoping Wu, Xiaodong Ma, 04-2020
 
@@ -68,7 +64,9 @@ rimavst= perform_riceVST3(im_r,sig,ws,VST_ABC) ;
 
 % denoise using optimal shrinkage
 stepsize = 2;
-[IMVSTd_shrink,rankmap] = denoise_svs3(rimavst,ks,stepsize,sig_med,'shrink');
+method = 'shrink'; % other options: 'tsvd', 'soft', 'hard'
+
+[IMVSTd_shrink,rankmap] = denoise_svs3(rimavst,ks,stepsize,sig_med,method);
 
 % EUI VST
 IMVSTd_shrink_EUIVST = perform_riceVST_EUI3(IMVSTd_shrink,sig,ws,VST_ABC);

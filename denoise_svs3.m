@@ -56,11 +56,11 @@ rank_out= zeros(size(Sig));
 
 switch whichmethod
     case 'tsvd'
-        im_out =denoise_TSVD(nim,b,step,Sig);
+        im_out =denoise_TSVD3(nim,b,step,Sig);
     case 'soft'
-        im_out =denoise_optim_SVST(nim,b,step,Sig);
+        im_out =denoise_optim_SVST3(nim,b,step,Sig);
     case 'hard'
-        im_out =denoise_optim_SVHT(nim,b,step,Sig);
+        im_out =denoise_optim_SVHT3(nim,b,step,Sig);
     case 'shrink'
         [im_out, rank_out] =denoise_optim_SVShrinkage3(nim,b,step,Sig);
     otherwise
