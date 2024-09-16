@@ -14,7 +14,7 @@ load data_2shell
 
 %% parameter setting
 %ks = 5; % kernel size for noise estimation
-indz4test = 41-5:49+5; %41-10:49+10; % here a few slices (no smaller than 2*ks-1) are denoised for testing
+indz4test = 15:40; %41-10:49+10; % here a few slices (no smaller than 2*ks-1) are denoised for testing
 nVols= 9; % number of images volumes to consider. 
 
 % parallel computation
@@ -22,7 +22,7 @@ nVols= 9; % number of images volumes to consider.
 %% noise estimation 
 % noise level (percent)
 levels= 1:1:10;%1:10;
-kernelSizes= 5:2:5;
+kernelSizes= 7:2:7;
 %Sigmas_mppca= [];
 PSNR_sig= zeros(length(levels), length(kernelSizes));
 for idx=1: length(levels)
@@ -58,12 +58,12 @@ ARG.phase_filter_width = 3;
 
     % estimate noise
     im_r0 = dwi_noisy;
-    im_r  = im_r0(:,:,:,bvals0>500&bvals0<1500); %b1000
+    im_r  = im_r0(:,:,:,1:9); %b1000
     im_r= im_r(:,:,:,1:nVols);
 
     KSP2 = im_r;
 
-
+dwi = dwi(:,:,:,1:9);
 
 DD_phase=0*KSP2;
 
@@ -104,46 +104,77 @@ KSP2(isinf(KSP2))=0;
         ks= kernelSizes(jdx);
         % ks =5;
         % estimate noise from images
-        [~,Sigma_mppca_realphase] = denoise_mppca3(real(KSP2),ks);
+        [denoise_image_init,Sigma_mppca_realphase] = denoise_mppca3(real(KSP2),ks);
+        [denoise_image_initcom,Sigma_mppca_comphase] = denoise_mppca3((KSP2),ks);
       
-     %   [~,Sigma_mppcareal] = denoise_mppca3(real(im_r),ks);
+      %  [~,Sigma_mppcareal] = denoise_mppca3(real(im_r),ks);
+      %  [~,Sigma_mppca] = denoise_mppca3(imag(im_r),ks);
      %   [~,Sigma_mppcaimag] = denoise_mppca3(imag(im_r),ks);
-        PSNR_sig(idx, jdx)= PSNR(Sigma_mppca_realphase(mask), Sigma(mask));
+     %   PSNR_sigcom(idx, jdx)= PSNR(Sigma_mppca(mask), Sigma(mask));
+      %    PSNR_sigreal(idx, jdx)= PSNR(Sigma_mppcareal(mask), Sigma(mask));
+  
+       %     PSNR_sigimag(idx, jdx)= PSNR(Sigma_mppcaimag(mask), Sigma(mask));
+          PSNR_sig(idx, jdx)= PSNR(Sigma_mppca_realphase(mask), Sigma(mask));
+  
+    
     end
 
-    
 for n=1:size(KSP2,4);
-    KSP2(:,:,:,n)= KSP2(:,:,:,n)./ Sigma_mppca_realphase;
+    KSP2(:,:,:,n)= KSP2(:,:,:,n)./ (Sigma_mppca_realphase+eps);
 end
     
+    KSP2(isnan(abs(KSP2)))=0;
     
+    ks=5;
     
-    
-    
-        [denoise_image,Sigma_mppca_realphase] = denoise_mppca3(real(KSP2),ks);
+        [denoise_image,Sigma_mppca_realphase22] = denoise_mppca3(real(KSP2),ks);
 
+        [denoise_image2,Sigma_mppca_comphase222] = denoise_mppca3((KSP2),ks);
     
     
 for n=1:size(KSP2,4);
     denoise_image(:,:,:,n)= denoise_image(:,:,:,n).* Sigma_mppca_realphase;
 end
     
-            PSNR_sig(idx, jdx)= PSNR(denoise_image(mask), dwi0(mask));
+for n=1:size(KSP2,4);
+    denoise_image2(:,:,:,n)= denoise_image2(:,:,:,n).* Sigma_mppca_realphase;
+end
 
+    denoise_image(isnan(abs(denoise_image)))=0;
+
+for n=1:size(KSP2,4);
+    KSP2(:,:,:,n)= KSP2(:,:,:,n)./ (Sigma_mppca_realphase22+eps);
+end
     
+    KSP2(isnan(abs(KSP2)))=0;
+nonlocal_real=denoise_nonlocal_svs(real(KSP2),abs(denoise_image),ks);
+nonlocal_com=denoise_nonlocal_svs(KSP2,abs(denoise_image),ks);
+
+
+foldername = ['/vols/Data/wwu/wenchuan/dager/denoise/',num2str(level)];
+       str = sprintf('save %s/Recon.mat nonlocal_com nonlocal_real Sigma_mppca_comphase denoise_image_initcom denoise_image_init Sigma_mppca_comphase222 Sigma_mppca_realphase22 Sigma_mppca_realphase denoise_image denoise_image2 im_r;',foldername);
+           eval(str)
+
+            PSNR_sig_real_image(idx, jdx)= PSNR(denoise_image(mask), dwi(mask));
+            PSNR_sig_com_image(idx, jdx)= PSNR(abs(denoise_image2(mask)), dwi(mask));
+
     
 end
-save noiseEstimationInComplexDomaincor PSNR_sig levels kernelSizes
+save noiseEstimationInComplexDomaincor22 PSNR_sig levels kernelSizes PSNR_sig_real_image PSNR_sig_com_image
+
+    
 %%
+Psnr(:,1) = PSNR_sig_real_image;
+Psnr(:,2) = PSNR_sig_com_image;
+figure, plot(Psnr)
+
+legend('real','complex')
+xlabel('noise level (%)')
+ylabel('PSNR')
 
 
-
-
-
-
-%%
 %figure, plot(levels, PSNR_sig)  
-figure, plot(PSNR_sigimag)
+figure, plot(PSNR_sig)
 legend('ks=3','ks=5','ks=7','ks=9','ks=11')
 xlabel('noise level (%)')
 ylabel('PSNR')
